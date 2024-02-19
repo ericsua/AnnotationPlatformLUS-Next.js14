@@ -1,5 +1,7 @@
 # Mine
-src/assets/*
+assets
+.env
+public/
 ###
 
 node_modules

@@ -9,7 +9,8 @@ class ResponsivePlayer extends Component {
         <div className="player-wrapper">
           <ReactPlayer
             className="react-player"
-            url={"src/assets/clip.mp4"}
+            url={"http://localhost:3000/videos/Cov_combatting_Image1.mp4"}
+            // url={"src/assets/clip.mp4"}
             controls={true}
             loop={true}
             width="100%"
