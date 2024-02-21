@@ -9,6 +9,11 @@
   margin-bottom: 20px;
 }
 
+.player-wrapper-error {
+  padding-top: 28%;
+  padding-bottom: 28%;
+}
+
 .react-player {
   position: absolute;
   top: 0;

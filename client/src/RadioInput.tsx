@@ -1,20 +1,36 @@
-
 import React from "react";
-import { ControllerRenderProps } from "react-hook-form";
+import { UseFormRegister } from "react-hook-form";
 import { FormData } from "./Form";
+import { type RegisterName } from "./Form";
 
 interface RadioInputProps {
-    field: ControllerRenderProps<FormData>;
+    //field: ControllerRenderProps<FormData>;
     value: string;
+    register: UseFormRegister<FormData>;
+    registerName: RegisterName;
 }
 
-export default function RadioInput({ field, value }: RadioInputProps) {
-  return (
-    <>
-      <label>
-        <input type="radio" {...field} value={value}/> {value}
-      </label>
-      <br />
-    </>
-  );
+export default function RadioInput({
+    value,
+    register,
+    registerName,
+}: RadioInputProps) {
+    return (
+        <>
+            <label>
+                {/* <input type="radio" {...field} value={value}/> {value} */}
+                <input
+                    // key={crypto.randomUUID()}
+                    type="radio"
+                    {...register(registerName, {
+                        required: "Please select an option for " + registerName,
+                    })}
+                    value={value}
+                    
+                />
+                {" " + value}
+            </label>
+            <br />
+        </>
+    );
 }

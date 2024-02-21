@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import mongoose, { connect } from "mongoose";
 
 import videoRouter from "./routes/videoRouter";
+import logger from "./logger";
+
+import cors from "cors";
 
 dotenv.config();
 
@@ -13,13 +16,16 @@ const db = mongoose.connection;
 
 db.on("error", console.error.bind(console, "Connection error:"));
 db.once("open", function () {
-    console.log("Connected to MongoDB");
+    //console.log("Connected to MongoDB 📗");
+    logger.info("Connected to MongoDB 📗");
 });
 
 try {
     await connect(MONGO_URI);
 } catch (err) {
-    console.log("Error connecting to MongoDB: ", err);
+    //console.log("Error connecting to MongoDB: ", err);
+    logger.error("Error connecting to MongoDB: ", err);
+    process.exit(1);
 }
 
 // EXPRESS
@@ -27,8 +33,9 @@ try {
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-export const timeouts: NodeJS.Timeout[] = [];
+export const timeouts: {a: NodeJS.Timeout, b: () => void, id: string}[] = [];
 
+app.use(cors())
 
 app.use(express.json());
 
@@ -41,19 +48,45 @@ app.use("/api/v1/video", videoRouter);
 app.use(express.static("public"));
 
 app.listen(port, () => {
-    console.log(`[server]: LUS server listening at http://localhost:${port}`);
+    //console.log(`[server]: LUS server listening at http://localhost:${port}`);
+    logger.info(`LUS server listening at http://localhost:${port}`);
+});
+
+app.use("*", (req: Request, res: Response) => {
+    res.status(404).json({ message: "Not found" });
 });
 
 // Close the connection when the application stops
 ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
     process.on(signal, async () => {
+        console.log(
+            `\nReceived ${signal} signal, gracefully cleaning up before terminating... 📕`
+        );
+
+        for (let timeout of timeouts) {
+            clearTimeout(timeout.a)
+            await timeout.b()
+        }
+
         await mongoose.connection.close(true);
 
-        console.log("\nMongoose connection closed through app termination 📕");
+        //console.log("\nMongoose connection closed through app termination 📕");
+        logger.info("Mongoose connection closed through app termination 📕");
 
-        timeouts.forEach((timeout) => clearTimeout(timeout));
-        console.log("\nTimeouts cleared 📕");
+        // timeouts.forEach(async (timeout) => 
+        // {
+        //     clearTimeout(timeout.a)
+        //     await timeout.b()
+        // });
+
+        
+        //console.log("\nTimeouts cleared 📕");
+        logger.info("Timeouts cleared 📕");
 
         process.exit(0);
     })
 );
+
+// setInterval(() => {
+//     timeouts.forEach((timeout) => console.log(timeout.id));
+// }, 5000);
