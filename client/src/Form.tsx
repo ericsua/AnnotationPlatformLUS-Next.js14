@@ -1,4 +1,4 @@
-import { get, set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import RadioBox from "./RadioBox";
 import TextArea from "./TextArea";
 import React, { useState } from "react";
@@ -6,14 +6,9 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./state/store";
 import { useDispatch } from "react-redux";
-import { getNewVideo, setVideoID } from "./state/videoState";
+import { getNewVideo } from "./state/videoState";
 
 const serverUrlBase = import.meta.env.VITE_SERVER_URL;
-
-type FormProps = {
-    videoID: string;
-    setVideoID: React.Dispatch<React.SetStateAction<string>>;
-};
 
 export interface FormData {
     option1: string;
@@ -38,10 +33,8 @@ export default function Form() {
     const dispatch = useDispatch<AppDispatch>();
 
     const onSubmit = async (data: FormData) => {
-        console.log(data);
-        //await new Promise((resolve) => setTimeout(resolve, 3000));
+        console.log("data to POST", data);
         toast.promise(
-            // new Promise((resolve) => setTimeout(resolve, 3000))
             fetch(serverUrlBase + "/api/v1/video/" + videoID, {
                 method: "POST",
                 headers: {
@@ -58,8 +51,6 @@ export default function Form() {
 
                 if (res.status === 201) {
                     console.log("annotation submitted successfully", jsonData);
-                    //setVideoID("reload");
-                    //dispatch(setVideoID("reload"));
                     dispatch(getNewVideo());
                     reset();
                     return "Annotation submitted successfully!";
@@ -73,10 +64,6 @@ export default function Form() {
                     );
                 }
             }),
-            // .catch((err) => {
-            //   console.error(err);
-            //   return err;
-            //   })
             {
                 loading: "Loading...",
                 success: "Annotation submitted successfully!",
@@ -89,10 +76,8 @@ export default function Form() {
     return (
         <>
             <Toaster position="bottom-center" reverseOrder={false} />
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)} className="form">
                 <RadioBox
-                    //control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"option1"}
                     errors={errors}
@@ -100,8 +85,6 @@ export default function Form() {
                     options={["Option1", "Option2", "Option3"]}
                 />
                 <RadioBox
-                    // control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"option2"}
                     errors={errors}
@@ -109,8 +92,6 @@ export default function Form() {
                     options={["Option2A", "Option2B", "Option2C"]}
                 />
                 <RadioBox
-                    // control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"option3"}
                     errors={errors}
@@ -118,8 +99,6 @@ export default function Form() {
                     options={["Option3A", "Option3B", "Option3C"]}
                 />
                 <RadioBox
-                    // control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"option4"}
                     errors={errors}
@@ -127,8 +106,6 @@ export default function Form() {
                     options={["Option4A", "Option4B", "Option4C"]}
                 />
                 <RadioBox
-                    // control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"option5"}
                     errors={errors}
@@ -136,8 +113,6 @@ export default function Form() {
                     options={["Option5A", "Option5B", "Option5C"]}
                 />
                 <TextArea
-                    // control={control}
-                    // key={crypto.randomUUID()}
                     register={register}
                     registerName={"text"}
                     errors={errors}
@@ -145,38 +120,9 @@ export default function Form() {
                     nameInRequired="free"
                     minLength={50}
                 />
-                {/* <div className="txtContainer">
-        <label className="lblRadio">
-          Free description (minimum 50 characters):
-        </label>
-        <div className="txtAreaContainer">
-          <Controller
-            name="text"
-            control={control}
-            defaultValue=""
-            rules={{
-              required:
-                "The free description is required, and must be at least 50 characters long.",
-              minLength: {
-                value: 50,
-                message: "Text must be at least 50 characters long",
-              },
-            }}
-            render={({ field }) => (
-              <textarea
-                {...field}
-                placeholder="Enter your free description here..."
-              />
-            )}
-          />
-          {errors.text && (
-            <span className="spanError">{errors.text.message}</span>
-          )}
-        </div>
-      </div> */}
 
                 <div className="btnContainer">
-                    <button disabled={isSubmitting} type="submit">
+                    <button disabled={isSubmitting} type="submit" className="btn">
                         Submit
                     </button>
                 </div>

@@ -18,9 +18,7 @@ export default function RadioInput({
     return (
         <>
             <label>
-                {/* <input type="radio" {...field} value={value}/> {value} */}
                 <input
-                    // key={crypto.randomUUID()}
                     type="radio"
                     {...register(registerName, {
                         required: "Please select an option for " + registerName,

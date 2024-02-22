@@ -1,30 +1,23 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
+import React, { useEffect } from "react";
 import Form from "./Form";
+import Navbar from "./Navbar";
 import VideoPlayer from "./VideoPlayer";
 
-
 function App() {
-  
-  //const [videoID, setVideoID] = useState("")
-  //const [videoName, setVideoName] = useState("");
-  //const [changeVideo, setChangeVideo] = useState(false);
+    useEffect(() => {
+        window.onbeforeunload = () => true;
+        return () => {
+            window.onbeforeunload = null;
+        };
+    }, []);
 
-  useEffect(() => {
-    window.onbeforeunload = () => true;
-    return () => {
-      window.onbeforeunload = null;
-    };
-  }, []);
-
-  return (
-    <>
-      {/* <VideoPlayer videoName={videoName} videoID={videoID} setVideoID={setVideoID} setVideoName={setVideoName}/> */}
-      <VideoPlayer/>
-      <Form/>
-      {/* <Form videoID={videoID} setVideoID={setVideoID} /> */}
-    </>
-  );
+    return (
+        <>
+            <Navbar />
+            <VideoPlayer />
+            <Form />
+        </>
+    );
 }
 
 export default App;

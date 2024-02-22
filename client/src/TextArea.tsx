@@ -27,6 +27,7 @@ export default function TextArea({
             </label>
             <div className="txtAreaContainer">
                 <textarea
+                    className="freetext"
                     {...(register(registerName,
                     {
                         required:
