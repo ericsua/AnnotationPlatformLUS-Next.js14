@@ -6,9 +6,9 @@ import VideoPlayer from "./VideoPlayer";
 
 function App() {
   
-  const [videoID, setVideoID] = useState("")
-  const [videoName, setVideoName] = useState("");
-  const [changeVideo, setChangeVideo] = useState(false);
+  //const [videoID, setVideoID] = useState("")
+  //const [videoName, setVideoName] = useState("");
+  //const [changeVideo, setChangeVideo] = useState(false);
 
   useEffect(() => {
     window.onbeforeunload = () => true;
@@ -19,8 +19,10 @@ function App() {
 
   return (
     <>
-      <VideoPlayer videoName={videoName} videoID={videoID} setVideoID={setVideoID} setVideoName={setVideoName}/>
-      <Form videoID={videoID} setVideoID={setVideoID} />
+      {/* <VideoPlayer videoName={videoName} videoID={videoID} setVideoID={setVideoID} setVideoName={setVideoName}/> */}
+      <VideoPlayer/>
+      <Form/>
+      {/* <Form videoID={videoID} setVideoID={setVideoID} /> */}
     </>
   );
 }
