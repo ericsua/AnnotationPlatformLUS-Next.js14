@@ -75,7 +75,7 @@ async function handleNoAvailableVideos(
         logger.info(
             "[GET] All videos are annotated, no available videos to send!"
         );
-        res.status(204).json({
+        res.status(214).json({
             message: "All videos are currently annotated.",
         });
     } else {
@@ -135,11 +135,19 @@ videoRouter.get("/", async (req: Request, res: Response) => {
         //await randomVideo.save(); // Save updated status
 
         const callbackTimeout = async (id?: string) => {
-            const updatedVideo = await Video.findByIdAndUpdate(
-                randomVideo._id,
-                { $set: { status: "available" } },
-                { new: false } // Return updated document
-            );
+            // const updatedVideo = await Video.findByIdAndUpdate(
+            //     randomVideo._id,
+            //     { $set: { status: "available" } },
+            //     { new: false, runValidators: true,  } // Return updated document
+            // );
+
+            // const updatedVideo = await Video.findOneAndUpdate(
+            //     { _id: randomVideo._id, status: "pending" },
+            //     { $set: { status: "available" } },
+            //     { new: true, useFindAndModify: false, runValidators: true }, // Return updated document
+            // ).exec()
+
+            const updatedVideo = await Video.findById(randomVideo._id).exec();
 
             if (!updatedVideo) {
                 console.error(
@@ -153,6 +161,11 @@ videoRouter.get("/", async (req: Request, res: Response) => {
                 logger.info(
                     `[timeout] Video status updated from pending to available (id: ${updatedVideo._id})`
                 );
+                updatedVideo.status = "available";
+                const { errorStatus: errorStatusAvailable, message: messageAvailable } = await handleSave(updatedVideo, res, "POST", "pending video to available in timeout");
+                if (errorStatusAvailable !== 0) {
+                    logger.error(`[timeout] Error while saving video status to available: ${messageAvailable}`);
+                }
             } else if (updatedVideo.status === "annotated") {
                 // Video has been annotated, no need to update:
                 logger.info(
@@ -255,6 +268,7 @@ videoRouter.post(
                     "POST",
                     "video status to annotated"
                 );
+            console.log("[POST] Video status updated to annotated", video)
             if (errorStatusVideo !== 0) {
                 res.status(errorStatusVideo).json({ message: messageVideo });
                 return;

@@ -12,6 +12,7 @@ dotenv.config();
 // MONGOOSE
 
 const MONGO_URI = process.env.MONGO_URI || "error";
+const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 const db = mongoose.connection;
 
 db.on("error", console.error.bind(console, "Connection error:"));
@@ -20,7 +21,8 @@ db.once("open", function () {
 });
 
 try {
-    await connect(MONGO_URI);
+    // await connect(MONGO_URI);
+    await connect(MONGO_URI_LOCAL);
 } catch (err) {
     logger.error("Error connecting to MongoDB: ", err);
     process.exit(1);

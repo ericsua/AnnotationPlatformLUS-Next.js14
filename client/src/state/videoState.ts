@@ -44,6 +44,8 @@ export const videoSlice = createSlice({
                         { id: string; filename: string } | undefined
                     >
                 ) => {
+                    document.body.classList.remove("overflow-hidden");
+                    document.getElementById("blocker")?.classList.add("hidden");
                     if (!action.payload) {
                         return;
                     }
@@ -56,8 +58,11 @@ export const videoSlice = createSlice({
                 }
             )
             .addCase(getNewVideo.rejected, (state, action): void => {
-                console.log("ciao")
                 console.log("getNewVideo.rejected", action);
+                document.body.classList.remove("overflow-hidden");
+                document.getElementById("blocker")?.classList.add("hidden");
+                state.id = "";
+                state.filename = "";
                 if ((action.payload as TVideoError)?.status !== undefined) {
                     const err: TVideoError = action.payload as TVideoError;
                     state.error = err;
@@ -67,6 +72,17 @@ export const videoSlice = createSlice({
                         { position: "top-center" }
                     );
                 }
+            })
+            .addCase(getNewVideo.pending, (state, action) => {
+                console.log("getNewVideo.pending", action);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                document.body.classList.add("overflow-hidden");
+                document.getElementById("blocker")?.classList.remove("hidden");
+            })
+            .addDefaultCase((state, action) => {
+                console.log("default case", action);
+                document.body.classList.remove("overflow-hidden");
+                document.getElementById("blocker")?.classList.add("hidden");
             });
     },
 });
@@ -89,7 +105,10 @@ export const getNewVideo = createAsyncThunk(
             if (res.status === 210) {
                 console.log("210 only Pending videos available");
                 console.log(jsonData);
-                return thunkAPI.rejectWithValue({ status: res.status, message: jsonData.message });
+                return thunkAPI.rejectWithValue({
+                    status: res.status,
+                    message: jsonData.message,
+                });
             } else if (res.status === 214) {
                 console.log("214", jsonData);
                 return thunkAPI.rejectWithValue({
@@ -99,6 +118,12 @@ export const getNewVideo = createAsyncThunk(
                 //setVideoName(data.videoName);
             } else if (res.status === 200) {
                 console.log("ok", jsonData);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                const pSpinner = document.getElementById("p-spinner");
+                if (pSpinner) {
+                    pSpinner.innerText = "Loading next video...";
+                }
+                await new Promise((resolve) => setTimeout(resolve, 5000));
                 return { id: jsonData._id, filename: jsonData.filename };
             }
         } catch (error) {
@@ -109,6 +134,7 @@ export const getNewVideo = createAsyncThunk(
                 message: "An error occurred while loading the video.",
             });
         }
+        
     }
 );
 

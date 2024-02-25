@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import RadioBox from "./RadioBox";
 import TextArea from "./TextArea";
 import React, { useState } from "react";
@@ -6,7 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./state/store";
 import { useDispatch } from "react-redux";
-import { getNewVideo } from "./state/videoState";
+import { getNewVideo, setVideoFilename, setVideoID } from "./state/videoState";
 
 const serverUrlBase = import.meta.env.VITE_SERVER_URL;
 
@@ -34,6 +34,10 @@ export default function Form() {
 
     const onSubmit = async (data: FormData) => {
         console.log("data to POST", data);
+        const pSpinner = document.getElementById("p-spinner");
+        if (pSpinner) {
+            pSpinner.innerText = "Uploading annotation...";
+        }
         toast.promise(
             fetch(serverUrlBase + "/api/v1/video/" + videoID, {
                 method: "POST",
@@ -51,6 +55,8 @@ export default function Form() {
 
                 if (res.status === 201) {
                     console.log("annotation submitted successfully", jsonData);
+                    dispatch(setVideoID(""));
+                    dispatch(setVideoFilename(""));
                     dispatch(getNewVideo());
                     reset();
                     return "Annotation submitted successfully!";
@@ -76,6 +82,32 @@ export default function Form() {
     return (
         <>
             <Toaster position="bottom-center" reverseOrder={false} />
+            <div
+                id="blocker"
+                className="fixed left-0 top-0 w-screen h-screen backdrop-blur hidden"
+            >
+                <div className="flex flex-col justify-center items-center h-full">
+                    {/* <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div> */}
+                    <svg
+                        className="spinner animate-rotate size-[100px]"
+                        viewBox="0 0 50 50"
+                    >
+                        <circle
+                            className="path animate-dash"
+                            cx="25"
+                            cy="25"
+                            r="20"
+                            fill="none"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                        ></circle>
+                    </svg>
+                    <p id="p-spinner" className="mt-5 font-bold text-2xl">Loading next video...</p>
+                    {/* <p className="animate-typing overflow-hidden whitespace-nowrap border-r-4 border-r-black pr-5 text-5xl font-bold">
+                        Loading . . .
+                    </p> */}
+                </div>
+            </div>
             <form onSubmit={handleSubmit(onSubmit)} className="form">
                 <RadioBox
                     register={register}
@@ -122,7 +154,11 @@ export default function Form() {
                 />
 
                 <div className="btnContainer">
-                    <button disabled={isSubmitting} type="submit" className="btn">
+                    <button
+                        disabled={isSubmitting}
+                        type="submit"
+                        className="btn"
+                    >
                         Submit
                     </button>
                 </div>

@@ -5,11 +5,40 @@ import path from "path";
 
 import Video from "./models/video";
 import Annotation from "./models/annotation";
+import readline from "readline";
 
 dotenv.config();
 // connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || "error";
-const UPDATE = true;
+const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
+let UPDATE = true;
+
+function askQuestion(query: string) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise(resolve => rl.question(query, ans => {
+        rl.close();
+        resolve(ans);
+    }))
+}
+
+
+const ans = await askQuestion("\nRemote database? (yes/no) ");
+
+if (ans !== "yes" && ans !== "y") {
+    console.log("\nUsing local database");
+}
+const USE_REMOTE = ans === "yes" || ans === "y";
+
+const ans2 = await askQuestion("Do you want to update existing videos? (yes/no) ");
+
+if (ans2 === "no" || ans2 === "n") {
+    console.log("Not updating existing videos");
+    UPDATE = false;
+}
 
 // Check if connection is successful
 const db = mongoose.connection;
@@ -20,12 +49,12 @@ db.once("open", function () {
 });
 
 try {
-    await connect(MONGO_URI);
+    await connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL);
 } catch (err) {
     console.log("Error connecting to MongoDB: ", err);
 }
 
-
+console.log(MONGO_URI_LOCAL);
 
 // print available collections
 const collections = await mongoose.connection.db.listCollections().toArray();
@@ -34,7 +63,7 @@ console.log(collections);
 // end connect to MongoDB
 
 // get list of videos from folder
-const videoFolder = "./videos";
+const videoFolder = "./public/videos";
 const videoFiles = fs.readdirSync(videoFolder);
 
 videoFiles.forEach((file: string) => {

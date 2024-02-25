@@ -1,7 +1,13 @@
 # Mine
 assets
 .env
+.env*
+mongo-user
+mongo-pass
+init_mongo.js
 public/
+mongo/
+mongo3/
 ###
 
 node_modules

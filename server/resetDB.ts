@@ -22,7 +22,7 @@ function askQuestion(query: string) {
 
 const ans = await askQuestion("\nAre you sure you want to reset the database? (yes/no) ");
 
-if (ans !== "yes") {
+if (ans !== "yes" && ans !== "y") {
     console.log("Exiting...");
     process.exit(0);
 }
@@ -35,13 +35,16 @@ if (ans2 === "no" || ans2 === "n") {
     DELETE_ANNOTATIONS = false;
 }
 
+const ans3 = await askQuestion("Remote database? (yes/no) ");
 
+const USE_REMOTE = ans3 === "yes" || ans3 === "y";
 
 
 const MONGO_URI = process.env.MONGO_URI || "error";
+const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 
 try {
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL,);
 } catch (error) {
     console.log("cannot connect to the database");
 }

@@ -3,54 +3,106 @@
 @tailwind utilities;
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
+    transition: background-color 0.25s ease-in-out;
 }
 
+html {
+    --root-bg: #01000a;
+    --root-color: rgba(255, 255, 255, 0.87);
+    --a-hover: #646cff;
+    --btn-bg: #646cff;
+    --btn-border: 1px solid transparent;
+    --btn-hover-border: #f1f1f1;
+    --btn-hover-shadow: 0 0 10px rgba(116, 123, 255, 1);
+    --btn-active-bg: #464fff;
+    --form-border: 1px solid #858585;
+    --form-shadow: none;
+    --form-bg: rgb(19, 21, 32);
+    --lblRadio-color: #f8f4ff;
+    --freetext-border: 1px solid #858585;
+    --freetext-bg: #1a1a1a;
+    --freetext-color: #f1f1f1;
+    --freetext-placeholder: #858585;
+    --freetext-focus-border: #8a8ffe;
+    --freetext-focus-shadow: 0 0 10px rgba(116, 123, 255, 1);
+    --freetext-focus-outline: none;
+    --player-wrapper-border: 1px solid #858585;
+    --player-wrapper-shadow: none;
+    --input-bg: #3b3b3b;
+    --input-border: 1px solid #858585;
+    --input-border-hover: #acacac;
+    --btn-darkmode-bg: #01000a;
+    --btn-darkmode-border-color: #1e1e1e;
+    --btn-darkmode-color: #ffffff;
+    --radio-checked-bg: #99c8ff;
+    --radio-checked-bg-hover: #d1e7ff;
+    --spinner-color: hsl(255, 8%, 90%);
+}
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    width: 100%;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    /* color-scheme: light dark; */
+    /* color: rgba(255, 255, 255, 0.87); */
+    color: var(--root-color);
+    /* background-color: #242424;
   background-color: rgb(13, 15, 26);
-  background-color: #020015;
-  background-color: #01000a;
+  background-color: #020015; */
+    /* background-color: #01000a; */
+    background-color: var(--root-bg);
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-  flex: 1;
+    width: 100%;
+}
+#app {
+    color-scheme: light dark;
+    width: 100%;
+    background-color: var(--root-bg);
+    color: var(--root-color);
+}
+#app-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    flex: 1;
 }
 
 .a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
 }
 .a:hover {
-  color: #535bf2;
+    /* color: #535bf2; */
+    color: var(--a-hover);
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: var(--root-bg);
 }
 
+/* .player-wrapper {
+  border: var(--player-wrapper-border);
+  box-shadow: var(--player-wrapper-shadow);
+} */
+
 .h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+    font-size: 3.2em;
+    line-height: 1.1;
 }
 
 /* button {
@@ -65,112 +117,209 @@ body {
   transition: border-color 0.25s;
 } */
 .btn {
-  display: block;
-  margin: auto auto;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  /* background-color: #1a1a1a; */
-  background-color: #646cff;
-  cursor: pointer;
-  transition: border-color 0.25s;
+    display: block;
+    margin: auto auto;
+    border-radius: 8px;
+    /* border: 1px solid transparent; */
+    border: var(--btn-border);
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    /* background-color: #1a1a1a; */
+    /* background-color: #646cff; */
+    background-color: var(--btn-bg);
+    cursor: pointer;
+    transition: border-color 0.25s;
 }
 .btn:hover {
-  /* border-color: #646cff; */
-  border-color: #f1f1f1;
+    /* border-color: #646cff; */
+    /* border-color: #f1f1f1; */
+    border-color: var(--btn-hover-border);
+    box-shadow: var(--btn-hover-shadow);
 }
 .btn:focus,
 .btn:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    outline: 4px auto -webkit-focus-ring-color;
 }
 .btn:active {
-  background-color: #464fff;
+    /* background-color: #464fff; */
+    background-color: var(--btn-active-bg);
 }
 
 .form {
-  /* background-color: rgb(10, 14, 38); */
-  background-color: #101010;
+    /* background-color: rgb(10, 14, 38); */
+    /* background-color: #101010;
   background-color: rgb(7, 10, 27);
-  background-color: #020015;
-  background-color: rgb(19, 21, 32);
+  background-color: #020015; */
+    /* background-color: rgb(19, 21, 32); */
+    background-color: var(--form-bg);
 
-  margin: auto;
-  padding: 2rem 3rem;
-  border: 1px solid #646cff;
-  border: 1px solid #858585;
-  border-radius: 8px;
-  /* box-shadow: 0 0 100px rgba(116, 123, 255, 1); */
-  text-align: left;
+    margin: auto;
+    padding: 2rem 3rem;
+    /* border: 1px solid #646cff;
+  border: 1px solid #858585; */
+    border: var(--form-border);
+    border-radius: 8px;
+    /* box-shadow: 0 0 100px rgba(116, 123, 255, 1); */
+    box-shadow: var(--form-shadow);
+    text-align: left;
 }
 
 .radioContainer {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .lblRadio {
-  display: block;
-  margin-bottom: 5px;
-  font-size: large;
-  font-weight: bold;
-  color: #f8f4ff;
+    display: block;
+    margin-bottom: 5px;
+    font-size: large;
+    font-weight: bold;
+    /* color: #f8f4ff; */
+    color: var(--lblRadio-color);
 }
 
 .txtContainer {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .areaContainer {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .freetext {
-  width: 100%;
-  color: #f1f1f1;
+    width: 100%;
+    /* color: #f1f1f1; */
+    color: var(--freetext-color);
 }
 .freetext {
-  max-width: 100%;
-  min-width: 200px;
-  min-height: 100px;
-  max-height: 200px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #6e75f2;
-  background-color: #1a1a1a;
-  border: 1px solid #858585;
-  font-size: 1em;
-  resize: vertical;
+    max-width: 100%;
+    min-width: 200px;
+    min-height: 100px;
+    max-height: 200px;
+    padding: 10px;
+    border-radius: 8px;
+    /* border: 1px solid #6e75f2; */
+    /* background-color: #1a1a1a; */
+    background-color: var(--freetext-bg);
+    /* border: 1px solid #858585; */
+    border: var(--freetext-border);
+    font-size: 1em;
+    resize: vertical;
 }
 .freetext::placeholder {
-  color: #858585;
+    /* color: #858585; */
+    color: var(--freetext-placeholder);
 }
 
 .freetext:focus {
-  outline: none;
-  border-color: #8a8ffe;
-  box-shadow: 0 0 10px rgba(116, 123, 255, 1);
+    /* outline: none; */
+    outline: var(--freetext-focus-outline);
+    /* border-color: #8a8ffe; */
+    border-color: var(--freetext-focus-border);
+    /* box-shadow: 0 0 10px rgba(116, 123, 255, 1); */
+    box-shadow: var(--freetext-focus-shadow);
 }
 
 .btn:hover {
-  outline: none;
-  border-color: #8a8ffe;
-  box-shadow: 0 0 10px rgba(116, 123, 255, 1);
+    outline: none;
+    border-color: #8a8ffe;
+    box-shadow: 0 0 10px rgba(116, 123, 255, 1);
 }
 .btn:disabled {
-  background-color: #8e90b5;
-  cursor: not-allowed;
+    background-color: #8e90b5;
+    cursor: not-allowed;
 }
 
 .spanError {
-  color: #ff4d4d;
-  font-size: 0.9em;
-  margin-top: 5px;
+    color: #ff4d4d;
+    font-size: 0.9em;
+    margin-top: 5px;
 }
 
-@media (prefers-color-scheme: light) {
+input[type="radio"] {
+    vertical-align: middle;
+    width: 0.9rem;
+    height: 0.9rem;
+    transition: background-color 0s ease-in-out;
+}
+
+input[type="radio"]:not(:checked):not(:disabled) {
+    appearance: none;
+    margin-bottom: 0;
+    background: var(--input-bg);
+    /* border-radius: 2px; */
+    border: var(--input-border);
+}
+
+input[type="radio"]:checked:not(:disabled) {
+    appearance: none;
+    /* background-color: white; */
+    background: var(--radio-checked-bg);
+    padding: 2px;
+    border: 1px solid var(--radio-checked-bg);
+    background-clip: content-box;
+    border-radius: 50%;
+    /* border: 1px solid #0275ff; */
+    /* box-shadow: 0px 0px 0px 2px transparent, 0px 0px 0px 1px #0275ff; */
+    /* padding: 0.11em; */
+}
+
+input[type="radio"]:hover:checked:not(:disabled) {
+    /* border-color: #ACACAC; */
+    border-color: var(--input-border-hover);
+    background-color: var(--radio-checked-bg-hover);
+    border-color: var(--radio-checked-bg-hover);
+}
+
+input[type="radio"]:hover:not(:checked):not(:disabled) {
+    /* border-color: #ACACAC; */
+    border-color: var(--input-border-hover);
+}
+
+input[type="radio"]:not(:checked):not(:disabled) {
+    border-radius: 100px;
+}
+
+.spinner {
+    stroke: var(--spinner-color);
+}
+
+[data-theme-app="light"] {
+    --root-bg: #ffffff;
+    --root-color: #213547;
+    --a-hover: #747bff;
+    --btn-bg: #f9f9f9;
+    --btn-border: 1px solid #646cff;
+    --btn-hover-border: #646cff;
+    --btn-hover-shadow: 0 0 10px rgb(180, 183, 252);
+    --btn-active-bg: rgb(197, 199, 255);
+    --form-border: 1px solid #ccc;
+    --form-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    --form-bg: #f9f9f9;
+    --lblRadio-color: #213547;
+    --freetext-border: 1px solid #ccc;
+    --freetext-bg: #f9f9f9;
+    --freetext-color: #213547;
+    --freetext-placeholder: #868686;
+    --freetext-focus-border: #c0c3ff;
+    --freetext-focus-shadow: 0 0 10px rgb(209, 211, 254);
+    --freetext-focus-outline: none;
+    --player-wrapper-border: 1px solid #ccc;
+    --player-wrapper-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    --input-bg: #f9f9f9;
+    --input-border: 1px solid #767676;
+    --input-border-hover: #4f4f4f;
+    --btn-darkmode-bg: var(--root-bg);
+    --btn-darkmode-border-color: #d7d7d7;
+    --btn-darkmode-color: #000000;
+    --radio-checked-bg: #0275ff;
+    --radio-checked-bg-hover: #015cc8;
+    --spinner-color: hsl(240, 1%, 56%);
+    --spinner-color: hsl(209, 31%, 27%);
+}
+/* @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
@@ -210,4 +359,4 @@ body {
     border-color: #c0c3ff;
     box-shadow: 0 0 10px rgb(209, 211, 254);
   }
-}
+} */
