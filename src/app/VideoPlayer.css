@@ -1,0 +1,30 @@
+.player-wrapper {
+  position: relative;
+  padding: 20px;
+  padding-top: 56.25%; /* Player ratio: 100 / (1280 / 720) */
+  border: 1px solid #646cff;
+  border: 1px solid #858585;
+  border: var(--player-wrapper-border);
+  border-radius: 8px;
+  box-shadow: 0 0 100px rgba(116, 123, 255, 1);
+  box-shadow: var(--player-wrapper-shadow);
+  margin-bottom: 20px;
+}
+
+.player-wrapper-error {
+  padding-top: 28%;
+  padding-bottom: 28%;
+}
+
+.react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* @media (prefers-color-scheme: light) {
+  .player-wrapper {
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+} */
