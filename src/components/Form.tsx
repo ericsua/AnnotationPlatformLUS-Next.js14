@@ -87,13 +87,18 @@ export default function Form() {
                 error: "An error occurred while submitting the form.",
             }
         );
-        const {status} = await postPromise
-        if (status && status === 201) {
-            console.log("annotation submitted successfully");
-            dispatch(setVideoID(""));
-            dispatch(setVideoFilename(""));
-            dispatch(getNewVideo());
-            reset();
+        try {
+            const {status} = await postPromise
+            if (status && status === 201) {
+                console.log("annotation submitted successfully");
+                dispatch(setVideoID(""));
+                dispatch(setVideoFilename(""));
+                dispatch(getNewVideo());
+                reset();
+            }
+            //reset();
+        } catch (error) {
+            console.log("error catched", error);
         }
         //reset();
     };

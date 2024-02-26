@@ -74,9 +74,10 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
             }).then(async (res) => {
                 const jsonData = await res.json();
                 if (!res.ok) {
-                    throw new Error(
-                        "An error occurred while submitting the form."
-                    );
+                    // throw new Error(
+                    //     "An error occurred while submitting the form."
+                    // );
+                    return Promise.reject("An error occurred while submitting the form.");
                 }
 
                 if (res.status === 201) {
@@ -87,9 +88,11 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
                         "An error occurred while submitting the form.",
                         jsonData
                     );
-                    throw new Error(
-                        "An error occurred while submitting the form."
-                    );
+                    // throw new Error(
+                    //     "An error occurred while submitting the form."
+                    // );
+                    return Promise.reject("An error occurred while submitting the form.");
+
                 }
             })
 }
