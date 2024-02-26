@@ -77,7 +77,7 @@ export default function Form() {
         if (pSpinner) {
             pSpinner.innerText = "Uploading annotation...";
         }
-        const postPromise = postVideoAction(data, videoID, dispatch, reset)
+        const postPromise = postVideoAction(data, videoID)
         toast.promise(
             //fetch(serverUrlBase + "/api/v1/video/" + videoID, {
             postPromise,
@@ -88,7 +88,7 @@ export default function Form() {
             }
         );
         const {status} = await postPromise
-        if (status === 201) {
+        if (status && status === 201) {
             console.log("annotation submitted successfully");
             dispatch(setVideoID(""));
             dispatch(setVideoFilename(""));

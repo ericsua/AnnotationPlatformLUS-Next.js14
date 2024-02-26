@@ -59,10 +59,11 @@ export async function thunkGetNewVideo(thunkAPI: any) {
 
 }
 
-export const postVideoAction = async (data: FormData, videoID: string, dispatch: ThunkDispatch<{
-    videoState: VideoState;
-    darkMode: DarkModeState;
-}, undefined, UnknownAction> & Dispatch<UnknownAction>, reset: UseFormReset<FormData>) => {
+// export const postVideoAction = async (data: FormData, videoID: string, dispatch: ThunkDispatch<{
+//     videoState: VideoState;
+//     darkMode: DarkModeState;
+// }, undefined, UnknownAction> & Dispatch<UnknownAction>, reset: UseFormReset<FormData>) => {
+export const postVideoAction = async (data: FormData, videoID: string) => {
     console.log("data to POST", data);
     return fetch( serverUrlBase + "/api/v1/video/" + videoID, {
                 method: "POST",
@@ -80,10 +81,6 @@ export const postVideoAction = async (data: FormData, videoID: string, dispatch:
 
                 if (res.status === 201) {
                     console.log("annotation submitted successfully", jsonData);
-                    dispatch(setVideoID(""));
-                    dispatch(setVideoFilename(""));
-                    dispatch(getNewVideo());
-                    reset();
                     return {status: res.status};
                 } else {
                     console.log(
