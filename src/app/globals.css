@@ -287,6 +287,14 @@ input[type="radio"]:not(:checked):not(:disabled) {
   stroke: var(--spinner-color);
 }
 
+@supports (padding-top: constant(safe-area-inset-top)) or (padding-top: env(safe-area-inset-top)) {
+  /* iOS 11.0 and later */
+  .ios-status-bar {
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 [data-theme-app="light"] {
   --root-bg: #ffffff;
   --root-color: #213547;

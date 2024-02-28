@@ -15,7 +15,7 @@ export default function Home() {
     return (
         <>
             <SettingsLoader />
-            <div id="app-container">
+            <div id="app-container" className="ios-status-bar">
                 <Navbar />
                 <VideoPlayer />
                 <Form />
