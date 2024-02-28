@@ -133,7 +133,7 @@ export const getNewVideo = createAsyncThunk(
                 if (pSpinner) {
                     pSpinner.innerText = "Loading next video...";
                 }
-                await new Promise((resolve) => setTimeout(resolve, 5000));
+                await new Promise((resolve) => setTimeout(resolve, 1000));
                 return { id: jsonData._id, filename: jsonData.filename };
             }
         } catch (error) {

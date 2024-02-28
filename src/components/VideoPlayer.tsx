@@ -7,10 +7,7 @@ import { AppDispatch, RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { getNewVideo } from "@/store/videoState";
 
-const serverUrlBase = process.env.SERVER_URL_BASE;
-
-
-// Render a YouTube video player
+// Render a video player
 export default function VideoPlayer() {
     //const [error, setError] = useState<{status: number, message: string} | null>(null);
 
@@ -52,11 +49,6 @@ export default function VideoPlayer() {
                 <div className="player-wrapper">
                     <ReactPlayer
                         className="react-player"
-                        // url={
-                        //     videoFilename !== ""
-                        //         ? serverUrlBase + "/videos/" + videoFilename
-                        //         : ""
-                        // }
                         url={
                             videoFilename !== ""
                                 ? "/videos/" + videoFilename

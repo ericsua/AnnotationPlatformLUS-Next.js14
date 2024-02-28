@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { FormData } from "./Form";
 import RadioInput from "./RadioInput";

@@ -28,6 +28,7 @@ html {
   --freetext-focus-shadow: 0 0 10px rgba(116, 123, 255, 1);
   --freetext-focus-outline: none;
   --player-wrapper-border: 1px solid #858585;
+  --player-wrapper-border-color: #858585;
   --player-wrapper-shadow: none;
   --input-bg: #3b3b3b;
   --input-border: 1px solid #858585;
@@ -307,6 +308,7 @@ input[type="radio"]:not(:checked):not(:disabled) {
   --freetext-focus-shadow: 0 0 10px rgb(209, 211, 254);
   --freetext-focus-outline: none;
   --player-wrapper-border: 1px solid #ccc;
+  --player-wrapper-border-color: #ccc;
   --player-wrapper-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   --input-bg: #f9f9f9;
   --input-border: 1px solid #767676;

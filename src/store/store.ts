@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import videoReducer from "./videoState";
-import darkModeReducer from "./darkMode";
+// import darkModeReducer, { DarkModeState, darkModeSliceDynamic } from "./darkMode";
+import { annotationsReducer } from "./annotations";
 
 export const makeStore = () => {
     return configureStore({
         reducer: {
             videoState: videoReducer,
-            darkMode: darkModeReducer,
+            //darkMode: darkModeReducer,
+            annotations: annotationsReducer,
         },
     });
 };

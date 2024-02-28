@@ -46,25 +46,6 @@ export default function TextArea({
                         "Enter the " + nameInRequired + " description here..."
                     }
                 />
-                {/* <Controller
-                    name="text"
-                    control={control}
-                    defaultValue=""
-                    rules={{
-                        required:
-                            "The " + nameInRequired + " description is required, and must be at least 50 characters long.",
-                        minLength: {
-                            value: minLength,
-                            message: "Text must be at least " + minLength + " characters long",
-                        },
-                    }}
-                    render={({ field }) => (
-                        <textarea
-                            {...field}
-                            placeholder={"Enter your " + nameInRequired + " description here..."}
-                        />
-                    )}
-                /> */}
                 {errors.text && (
                     <span className="spanError">{errors.text.message}</span>
                 )}

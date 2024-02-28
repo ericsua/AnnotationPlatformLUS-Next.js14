@@ -1,5 +1,5 @@
 "use client";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import RadioBox from "./RadioBox";
 import TextArea from "./TextArea";
 import React, { useEffect, useState } from "react";
@@ -7,10 +7,17 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
-import { getNewVideo, resetVideoStatus, setVideoFilename, setVideoID } from "@/store/videoState";
+import {
+    getNewVideo,
+    resetVideoStatus,
+    setVideoFilename,
+    setVideoID,
+} from "@/store/videoState";
 import { postVideoAction } from "@/app/actions";
-
-const serverUrlBase = process.env.SERVER_URL_BASE;
+// import CounterAnnotations from "./CounterAnnotations";
+const CounterAnnotations = dynamic(() => import("./CounterAnnotations"), { ssr: false });
+import { incrementAnnotationsCounter } from "@/store/annotations";
+import dynamic from "next/dynamic";
 
 export interface FormData {
     option1: string;
@@ -31,6 +38,7 @@ export default function Form() {
         reset,
     } = useForm<FormData>(); // { shouldFocusError: false }
 
+    console.log("FORMMMMMM");
     const videoID = useSelector((state: RootState) => state.videoState.id);
     const videoStatus = useSelector(
         (state: RootState) => state.videoState.status
@@ -60,7 +68,8 @@ export default function Form() {
             document.body.classList.remove("overflow-hidden");
             document.getElementById("blocker")?.classList.add("hidden");
             toast.error(
-                videoError?.message || "An error occurred while loading the video.",
+                videoError?.message ||
+                    "An error occurred while loading the video.",
                 {
                     position: "top-center",
                 }
@@ -69,15 +78,13 @@ export default function Form() {
         }
     }, [videoStatus]);
 
-    
-
     const onSubmit = async (data: FormData) => {
         console.log("data to POST", data);
         const pSpinner = document.getElementById("p-spinner");
         if (pSpinner) {
             pSpinner.innerText = "Uploading annotation...";
         }
-        const postPromise = postVideoAction(data, videoID)
+        const postPromise = postVideoAction(data, videoID);
         toast.promise(
             //fetch(serverUrlBase + "/api/v1/video/" + videoID, {
             postPromise,
@@ -88,12 +95,13 @@ export default function Form() {
             }
         );
         try {
-            const {status} = await postPromise
+            const { status } = await postPromise;
             if (status && status === 201) {
                 console.log("annotation submitted successfully");
                 dispatch(setVideoID(""));
                 dispatch(setVideoFilename(""));
                 dispatch(getNewVideo());
+                dispatch(incrementAnnotationsCounter());
                 reset();
             }
             //reset();
@@ -179,14 +187,15 @@ export default function Form() {
                     minLength={50}
                 />
 
-                <div className="btnContainer">
+                <div className="grid md:grid-cols-3 md:grid-rows-1 place-items-center grid-rows-2 grid-cols-1 gap-4">
                     <button
                         disabled={isSubmitting}
                         type="submit"
-                        className="btn"
+                        className="btn md:col-start-2 col-start-1"
                     >
                         Submit
                     </button>
+                    <CounterAnnotations />
                 </div>
             </form>
         </>

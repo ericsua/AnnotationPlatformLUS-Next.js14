@@ -28,7 +28,6 @@ export default function RadioInput({
                 />
                 <span className="px-4 align-baseline">{" " + value}</span>
             </label>
-            {/* <br /> */}
         </>
     );
 }
