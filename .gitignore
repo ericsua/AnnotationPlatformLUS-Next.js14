@@ -1,10 +1,21 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-public/videos/
-certificates/
+client/public/videos/
+client/certificates/
+
+assets
+.env
+.env*
+mongo
+mongo3
+server/public/videos/
+mongo-user
+mongo-pass
+init_mongo.js
+public/
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -13,7 +24,7 @@ certificates/
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
