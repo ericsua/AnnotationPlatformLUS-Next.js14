@@ -12,7 +12,7 @@ export default function CounterAnnotations() {
     }, [annotations]);
 
     return (
-        <span className="sm:max-sm:mx-auto md:ml-auto">
+        <span className="sm:max-sm:mx-auto md:ml-auto row-start-2 md:row-start-1 col-start-1 col-span-3">
             Your annotations: {annotations}
         </span>
     );
