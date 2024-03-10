@@ -1,7 +1,6 @@
+import { FormData, RegisterName } from "@/types/FormSchema";
 import React, { useEffect } from "react";
 import { FieldErrors, UseFormRegister, UseFormUnregister } from "react-hook-form";
-import { FormData } from "./Form";
-import { type RegisterName } from "./Form";
 
 interface TextAreaProps {
     register: UseFormRegister<FormData>;
@@ -29,7 +28,7 @@ export default function TextArea({
     return (
         <div className="txtContainer">
             <label className="lblRadio">
-                {label} (minimum {minLength} characters):
+                {label} (Minimum {minLength} characters):
             </label>
             <div className="txtAreaContainer">
                 <textarea

@@ -7,6 +7,30 @@
     transition: background-color 0.25s ease-in-out;
 }
 
+/* @keyframes moving-stripes {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+  }
+  
+  .progress-bar-animated {
+    background: linear-gradient(-45deg, #2196F3 25%, transparent 25%, transparent 50%, #2196F3 50%, #2196F3 75%, transparent 75%, transparent);
+    background-size: 50px 50px;
+    animation: moving-stripes 2s linear infinite;
+  } */
+
+  @keyframes moving-stripes-inner {
+    0% { background-position: 0 0; }
+    100% { background-position: 15px 15px; }
+  }
+  
+.progress-bar-inner-animated {
+    --pBar-stripe-light: #2196F3;
+    --pBar-stripe-dark: hsl(207, 90%, 44%);
+    background: linear-gradient(-45deg, var(--pBar-stripe-light) 25%, var(--pBar-stripe-dark) 25%, var(--pBar-stripe-dark) 50%, var(--pBar-stripe-light) 50%, #2196F3 75%, var(--pBar-stripe-dark) 75%, var(--pBar-stripe-dark));
+    background-size: 15px 15px;
+    animation: moving-stripes-inner 2s linear infinite;
+  }
+
 html {
     --root-bg: #01000a;
     --root-color: rgba(255, 255, 255, 0.87);
@@ -51,6 +75,7 @@ html {
     line-height: 1.5;
     font-weight: 400;
 
+
     /* color-scheme: light dark; */
     /* color: rgba(255, 255, 255, 0.87); */
     color: var(--root-color);
@@ -74,13 +99,13 @@ background-color: #020015; */
     background-color: var(--root-bg);
     color: var(--root-color);
 }
-#app-container {
+/* #app-container {
     max-width: 1280px;
     margin: 0 auto;
     padding: 2rem;
     text-align: center;
     flex: 1;
-}
+} */
 
 .a {
     font-weight: 500;

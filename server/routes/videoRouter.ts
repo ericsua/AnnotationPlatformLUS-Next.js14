@@ -11,9 +11,16 @@ import mongoose, { Model } from "mongoose";
 import { timeouts } from "../index";
 import logger from "../logger";
 import crypto from "crypto";
-import { z } from "zod";
+import { Server } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 const videoRouter: Router = express.Router();
+
+let socketIO: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> | null = null;
+
+function initSocket(socket: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
+    socketIO = socket;
+}
 
 async function handleSave(
     doc: mongoose.Document,
@@ -87,6 +94,12 @@ async function handleNoAvailableVideos(
             message: "No available videos for now, come back later.",
         });
     }
+}
+
+export async function getNumberAnnotatedVideos() {
+    const annotatedVideos = await Video.countDocuments({ status: "annotated" });
+    const totalVideos = await Video.countDocuments({});
+    return {annotatedVideos, totalVideos};
 }
 
 videoRouter.get("/", async (req: Request, res: Response) => {
@@ -254,7 +267,8 @@ videoRouter.post(
                 video.status === "available" ||
                 video.status === "annotated")
         ) {
-            const reqAnnotations = req.body;
+            const {data: reqAnnotations, userID} = req.body;
+            console.log("reqAnnotations", reqAnnotations, "userID", userID);
             const zodAnnotation = FormSchema.safeParse(reqAnnotations);
             if (!zodAnnotation.success) {
                 logger.error(
@@ -272,6 +286,7 @@ videoRouter.post(
             const annotation = new Annotation({
                 videoId: req.params.id,
                 annotations: zodAnnotation.data,
+                userId: userID,
             });
 
             console.log("annotation to save with post", annotation);
@@ -302,6 +317,9 @@ videoRouter.post(
                 id: annotation.videoId,
                 message: "Annotation submitted successfully!",
             });
+            const numAnnotatedVideosSocket = await getNumberAnnotatedVideos();
+            console.log("numAnnotatedVideosSocket", numAnnotatedVideosSocket);
+            socketIO?.emit("progressBarUpdate", numAnnotatedVideosSocket);
             return;
         } else {
             console.error(
@@ -313,4 +331,4 @@ videoRouter.post(
     }
 );
 
-export default videoRouter;
+export {videoRouter, initSocket};

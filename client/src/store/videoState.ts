@@ -1,5 +1,5 @@
 "use client";
-import { fetchGetNewVideo } from "@/app/actions";
+import { fetchGetNewVideo } from "@/actions/videos";
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const serverUrlBase = process.env.SERVER_URL_BASE;
@@ -10,14 +10,14 @@ export interface VideoState {
     id: string;
     filename: string;
     error: TVideoError;
-    status: 'idle' | 'pending' | 'fulfilled' | 'rejected';
+    status: "idle" | "pending" | "fulfilled" | "rejected";
 }
 
 const initialState: VideoState = {
     id: "",
     filename: "",
     error: null,
-    status: 'idle',
+    status: "idle",
 };
 
 export const videoSlice = createSlice({
@@ -37,9 +37,8 @@ export const videoSlice = createSlice({
             state.error = action.payload;
         },
         resetVideoStatus(state) {
-            state.status = 'idle';
-        }
-
+            state.status = "idle";
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -51,7 +50,7 @@ export const videoSlice = createSlice({
                         { id: string; filename: string } | undefined
                     >
                 ) => {
-                    state.status = 'fulfilled';
+                    state.status = "fulfilled";
                     //document.body.classList.remove("overflow-hidden");
                     //document.getElementById("blocker")?.classList.add("hidden");
                     if (!action.payload) {
@@ -66,7 +65,7 @@ export const videoSlice = createSlice({
                 }
             )
             .addCase(getNewVideo.rejected, (state, action): void => {
-                state.status = 'rejected';
+                state.status = "rejected";
                 console.log("getNewVideo.rejected", action);
                 // document.body.classList.remove("overflow-hidden");
                 // document.getElementById("blocker")?.classList.add("hidden");
@@ -83,17 +82,17 @@ export const videoSlice = createSlice({
                 }
             })
             .addCase(getNewVideo.pending, (state, action) => {
-                state.status = 'pending';
+                state.status = "pending";
                 console.log("getNewVideo.pending", action);
                 // window.scrollTo({ top: 0, behavior: "smooth" });
                 // document.body.classList.add("overflow-hidden");
                 // document.getElementById("blocker")?.classList.remove("hidden");
-            })
-            // .addDefaultCase((state, action) => {
-            //     console.log("default case", action);
-            //     document.body.classList.remove("overflow-hidden");
-            //     document.getElementById("blocker")?.classList.add("hidden");
-            // });
+            });
+        // .addDefaultCase((state, action) => {
+        //     console.log("default case", action);
+        //     document.body.classList.remove("overflow-hidden");
+        //     document.getElementById("blocker")?.classList.add("hidden");
+        // });
     },
 });
 
@@ -101,7 +100,7 @@ export const getNewVideo = createAsyncThunk(
     "videoState/getNewVideo",
     async (_, thunkAPI) => {
         try {
-            const {jsonData, status, errorFetch} = await fetchGetNewVideo();
+            const { jsonData, status, errorFetch } = await fetchGetNewVideo();
             if (errorFetch != "") {
                 const message = `An error has occured: ${status}`;
                 return thunkAPI.rejectWithValue({
@@ -144,7 +143,6 @@ export const getNewVideo = createAsyncThunk(
                 message: "An error occurred while loading the video.",
             });
         }
-        
     }
 );
 

@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
-import { ZodNumber, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence } from "framer-motion";
 import RadioBox from "./RadioBox";
@@ -16,7 +15,7 @@ import {
     setVideoFilename,
     setVideoID,
 } from "@/store/videoState";
-import { postVideoAction } from "@/app/actions";
+import { postVideoAction } from "@/actions/videos";
 // import CounterAnnotations from "./CounterAnnotations";
 const CounterAnnotations = dynamic(() => import("./CounterAnnotations"), {
     ssr: false,
@@ -24,400 +23,7 @@ const CounterAnnotations = dynamic(() => import("./CounterAnnotations"), {
 import { incrementAnnotationsCounter } from "@/store/annotations";
 import NumberInput from "./NumberInput";
 import AnimateSlide from "./AnimateSlide";
-
-function convertStringToBoolean(value: string, ctx: z.RefinementCtx) {
-    if (value !== "true" && value !== "false") {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Invalid value",
-        });
-        return z.NEVER;
-    }
-    return value === "true";
-}
-
-const zodInputNumberConverter = (zodPipe: ZodNumber) =>
-    z
-        .string()
-        .transform((value) => (value === "" ? null : value))
-        .nullable()
-        .refine(
-            (value) =>
-                value !== null || (value !== null && !isNaN(Number(value))),
-            {
-                message: "A number is required",
-            }
-        )
-        .transform((value) => (value === null ? 0 : Number(value)))
-        .pipe(zodPipe);
-
-const requiredErrorMessage = { invalid_type_error: "Please select an option" };
-
-const FormSchema = z.object({
-    pleuralLine: z
-        .object({
-            depthInCentimeters: zodInputNumberConverter(
-                z
-                    .number({
-                        errorMap: () => ({
-                            message:
-                                "The number must be between 0 and 1 and have at most one decimal",
-                        }),
-                    })
-                    .min(0)
-                    .max(1)
-                    .step(0.1)
-            ),
-            isRegular: z
-                .string(requiredErrorMessage)
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            specificsIrregular: z
-                .object({
-                    isContinuous: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isRegular === false
-                    ? data.specificsIrregular?.isContinuous !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural line is irregular, the specifics must be filled",
-                path: ["specificsIrregular.isContinuous"],
-            }
-        ),
-    axisScan: z.enum(["longitudinal", "horizontal"], requiredErrorMessage),
-    isPleuralSlidingPresent: z
-        .string(requiredErrorMessage)
-        .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-    horizontalArtifacts: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            specifics: z
-                .object({
-                    coverageAboveOrEqual50: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.coverageAboveOrEqual50 !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the horizontal artifacts are present, the specifics must be filled",
-                path: ["specifics.coverageAboveOrEqual50"],
-            }
-        ),
-    verticalArtifacts: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            specifics: z
-                .object({
-                    coverageAboveOrEqual50: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.coverageAboveOrEqual50 !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the vertical artifacts are present, the specifics must be filled",
-                path: ["specifics.coverageAboveOrEqual50"],
-            }
-        ),
-    subpleuralSpace: z.object({
-        microConsolidations: z
-            .object({
-                isPresent: z
-                    .string(requiredErrorMessage)
-                    .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-                specifics: z
-                    .object({
-                        isSingle: z
-                            .string(requiredErrorMessage)
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                        coverageAboveOrEqual50: z
-                            .string(requiredErrorMessage)
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                    })
-                    .nullable()
-                    .default(null),
-            })
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.coverageAboveOrEqual50 !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the micro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.coverageAboveOrEqual50"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.isSingle !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the micro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.isSingle"],
-                }
-            ),
-        macroConsolidations: z
-            .object({
-                isPresent: z
-                    .string(requiredErrorMessage)
-                    .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-                specifics: z
-                    .object({
-                        isSingle: z
-                            .string(requiredErrorMessage)
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                        coverageAboveOrEqual50: z
-                            .string()
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                        airBronchogram: z
-                            .object({
-                                isPresent: z
-                                    .string(requiredErrorMessage)
-                                    .transform((val, ctx) =>
-                                        convertStringToBoolean(val, ctx)
-                                    )
-                                    .nullable(),
-                                specifics: z
-                                    .object({
-                                        isStatic: z
-                                            .string(requiredErrorMessage)
-                                            .transform((val, ctx) =>
-                                                convertStringToBoolean(val, ctx)
-                                            )
-                                            .nullable(),
-                                        isFluid: z
-                                            .string(requiredErrorMessage)
-                                            .transform((val, ctx) =>
-                                                convertStringToBoolean(val, ctx)
-                                            )
-                                            .nullable(),
-                                    })
-                                    .nullable()
-                                    .default(null),
-                            })
-                            .nullable()
-                            .default(null),
-                        isDopplerAvailable: z
-                            .string(requiredErrorMessage)
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                        specificsDopplerBronchogram: z
-                            .object({
-                                isVascularizationPresent: z
-                                    .string(requiredErrorMessage)
-                                    .transform((val, ctx) =>
-                                        convertStringToBoolean(val, ctx)
-                                    )
-                                    .nullable(),
-                                isCoherentWithAnatomy: z
-                                    .string(requiredErrorMessage)
-                                    .transform((val, ctx) =>
-                                        convertStringToBoolean(val, ctx)
-                                    )
-                                    .nullable(),
-                            })
-                            .nullable()
-                            .default(null),
-                    })
-                    .nullable()
-                    .default(null),
-            })
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.isSingle !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.isSingle"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.coverageAboveOrEqual50 !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.coverageAboveOrEqual50"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.airBronchogram?.isPresent === true
-                        ? data.specifics.airBronchogram.specifics?.isStatic !==
-                              null
-                        : true;
-                },
-                {
-                    message:
-                        "If the air bronchogram is present, the specifics must be filled",
-                    path: ["specifics.airBronchogram.specifics.isStatic"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.airBronchogram?.isPresent === true
-                        ? data.specifics.airBronchogram.specifics?.isFluid !==
-                              null
-                        : true;
-                },
-                {
-                    message:
-                        "If the air bronchogram is present, the specifics must be filled",
-                    path: ["specifics.airBronchogram.specifics.isFluid"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.isDopplerAvailable === true
-                        ? data.specifics.specificsDopplerBronchogram
-                              ?.isVascularizationPresent !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the Doppler data is available, the specifics must be filled",
-                    path: [
-                        "specifics.specificsDopplerBronchogram.isVascularizationPresent",
-                    ],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.isDopplerAvailable === true
-                        ? data.specifics.specificsDopplerBronchogram
-                              ?.isCoherentWithAnatomy !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the Doppler data is available, the specifics must be filled",
-                    path: [
-                        "specifics.specificsDopplerBronchogram.isCoherentWithAnatomy",
-                    ],
-                }
-            ),
-    }),
-    pleuralEffusion: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val) => val === "true"),
-            specifics: z
-                .object({
-                    isCorpusculated: z
-                        .string(requiredErrorMessage)
-                        .transform((val) => val === "true")
-                        .nullable(),
-                    isSeptaPresent: z
-                        .string(requiredErrorMessage)
-                        .transform((val) => val === "true")
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.isCorpusculated !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural effusion is present, the specifics must be filled",
-                path: ["specifics.isCorpusculated"],
-            }
-        )
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.isSeptaPresent !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural effusion is present, the specifics must be filled",
-                path: ["specifics.isSeptaPresent"],
-            }
-        ),
-    textDescription: z.string(requiredErrorMessage).min(50, {
-        message: "The description must be at least 50 characters long",
-    }),
-});
-
-export type FormData = z.infer<typeof FormSchema>;
-export type FormDataUI = z.input<typeof FormSchema>;
-
-type NestedKeys<T> = T extends object
-    ? {
-          [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${NestedKeys<T[K]>}`}`;
-      }[keyof T]
-    : never;
-
-export type RegisterName = NestedKeys<FormData>;
+import { FormData, FormSchema, RegisterName } from "@/types/FormSchema";
 
 export default function Form() {
     const {
@@ -440,6 +46,7 @@ export default function Form() {
     //     getValues("pleuralLine.depthInCentimeters") === null,
     //     getValues("pleuralLine.depthInCentimeters") === undefined
     // );
+    // console.log(getValues("subpleuralSpace.macroConsolidations.isPresent"));
     const videoID = useSelector((state: RootState) => state.videoState.id);
     const videoStatus = useSelector(
         (state: RootState) => state.videoState.status
@@ -466,7 +73,7 @@ export default function Form() {
         `subpleuralSpace.macroConsolidations.specifics.airBronchogram.isPresent`
     );
     const isDopplerAvailableWatch = watch(
-        `subpleuralSpace.macroConsolidations.specifics.isDopplerAvailable`
+        `subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable`
     );
     const isPleuralEffusionPresentWatch = watch(`pleuralEffusion.isPresent`);
 
@@ -516,7 +123,7 @@ export default function Form() {
             {
                 loading: "Loading...",
                 success: "Annotation submitted successfully!",
-                error: "An error occurred while submitting the form.",
+                error: (error) =>  "An error occurred while submitting the form: " +  error.message
             }
         );
         try {
@@ -572,7 +179,6 @@ export default function Form() {
 
     return (
         <>
-            <Toaster position="bottom-center" reverseOrder={false} />
             <div
                 id="blocker"
                 className="fixed left-0 top-0 w-screen h-screen backdrop-blur z-50 hidden"
@@ -602,41 +208,7 @@ export default function Form() {
                 </div>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="form">
-                {/* <RadioBox
-                    register={register}
-                    registerName={"option1"}
-                    errors={errors}
-                    label="Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eveniet, architecto!"
-                    options={["Option1", "Option2", "Option3"]}
-                />
-                <RadioBox
-                    register={register}
-                    registerName={"option2"}
-                    errors={errors}
-                    label="Doloribus saepe id non illo ad eius sed minus corrupti facere beatae."
-                    options={["Option2A", "Option2B", "Option2C"]}
-                />
-                <RadioBox
-                    register={register}
-                    registerName={"option3"}
-                    errors={errors}
-                    label="Ratione cupiditate modi consequuntur sapiente blanditiis repellat similique error nihil numquam non soluta sit perferendis sint quis, itaque recusandae illo, quam facilis molestias voluptate repudiandae quae! Consequatur."
-                    options={["Option3A", "Option3B", "Option3C"]}
-                />
-                <RadioBox
-                    register={register}
-                    registerName={"option4"}
-                    errors={errors}
-                    label="Lorem ipsum dolor sit, amet consectetur adipisicing elit. Esse accusamus natus pariatur nulla eligendi tempora."
-                    options={["Option4A", "Option4B", "Option4C"]}
-                />
-                <RadioBox
-                    register={register}
-                    registerName={"option5"}
-                    errors={errors}
-                    label="Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis quibusdam repellendus eligendi."
-                    options={["Option5A", "Option5B", "Option5C"]}
-                /> */}
+                {/* // pleural line depth in centimeters component
                 <NumberInput
                     register={register}
                     unregister={unregister}
@@ -648,7 +220,7 @@ export default function Form() {
                     max={1}
                     step={0.1}
                     placeholder="0.0"
-                />
+                /> */}
 
                 <RadioBox
                     register={register}
@@ -694,8 +266,8 @@ export default function Form() {
                     label="The axis of the scan is:"
                     options={["longitudinal", "horizontal"]}
                     optionsLabels={[
-                        "Longitudinal (with the ribs)",
-                        "Horizontal (without the ribs)",
+                        "Longitudinal, with the ribs",
+                        "Horizontal, without the ribs",
                     ]}
                     isBoolean={false}
                 />
@@ -951,7 +523,7 @@ export default function Form() {
                                         register={register}
                                         unregister={unregister}
                                         registerName={
-                                            "subpleuralSpace.macroConsolidations.specifics.isDopplerAvailable"
+                                            "subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable"
                                         }
                                         errors={errors}
                                         label="Is Doppler data available?"
@@ -978,10 +550,10 @@ export default function Form() {
                                             register={register}
                                             unregister={unregister}
                                             registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.specificsDopplerBronchogram.isVascularizationPresent"
+                                                "subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isVascularizationPresent"
                                             }
                                             errors={errors}
-                                            label="Given that the Doppler data is available, is the vascularization of the branchogram present?"
+                                            label="Given that the Doppler data is available, is the vascularization of the bronchogram present?"
                                             options={[true, false]}
                                             optionsLabels={["Yes", "No"]}
                                             isBoolean={true}
@@ -991,7 +563,7 @@ export default function Form() {
                                             register={register}
                                             unregister={unregister}
                                             registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.specificsDopplerBronchogram.isCoherentWithAnatomy"
+                                                "subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isCoherentWithAnatomy"
                                             }
                                             errors={errors}
                                             label="Given that the Doppler data is available, is the level of vascularization coherent with the anatomy?"
@@ -1065,22 +637,34 @@ export default function Form() {
                     unregister={unregister}
                     registerName={"textDescription"}
                     errors={errors}
-                    label="Describe with free text whether the overall quality is sufficient or not to be evaluated confidently."
+                    label="Describe with free text whether the overall quality is sufficient or not to be evaluated confidently. Please include any additional information that you consider relevant, e.g. problems with the video."
                     nameInRequired="free"
                     minLength={50}
                 />
 
-                <div className="grid md:grid-cols-3 md:grid-rows-1 place-items-center grid-rows-2 grid-cols-3 gap-4">
+                <RadioBox
+                    register={register}
+                    unregister={unregister}
+                    registerName={"confidence"}
+                    errors={errors}
+                    label="What is your level of confidence in the annotation you are submitting?"
+                    options={["high", "medium", "low"]}
+                    optionsLabels={["High", "Medium", "Low"]}
+                    isBoolean={true}
+                />
+
+                <div className="grid xl:grid-cols-3 xl:grid-rows-1 place-items-center grid-rows-2 grid-cols-3 gap-4">
                     <button
                         type="reset"
-                        className="btn btn-reset justify-self-start md:col-start-1 col-start-1 row-start-1"
+                        onClick={() => reset()}
+                        className="btn btn-reset justify-self-start xl:col-start-1 col-start-1 row-start-1"
                     >
                         Reset
                     </button>
                     <button
                         disabled={isSubmitting}
                         type="submit"
-                        className="btn md:col-start-2 col-start-3 row-start-1"
+                        className="btn xl:col-start-2 col-start-3 row-start-1"
                     >
                         Submit
                     </button>

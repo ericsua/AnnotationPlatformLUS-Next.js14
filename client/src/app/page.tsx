@@ -8,6 +8,11 @@ const VideoPlayer = dynamic(() => import("@/components/VideoPlayer"), {
 });
 import SettingsLoader from "@/components/SettingsLoader";
 import SkeletonVideoPlayer from "@/components/SkeletonVideoPlayer";
+import { Toaster } from "react-hot-toast";
+// import ProgressBar from "@/components/ProgressBar";
+const ProgressBar = dynamic(() => import("@/components/ProgressBar"), {
+    ssr: false,
+});
 
 export default function Home() {
     console.log("first render Home.tsx");
@@ -15,10 +20,15 @@ export default function Home() {
     return (
         <>
             <SettingsLoader />
-            <div id="app-container" className="ios-status-bar">
+            <div className="max-w-[1280px] md:max-w-full p-8 text-center my-0 mx-auto ios-status-bar">
                 <Navbar />
-                <VideoPlayer />
-                <Form />
+                <ProgressBar />
+                <div className="md:flex md:flex-row">
+                        <VideoPlayer />
+                    <div className="md:w-1/2 md:px-4">
+                        <Form />
+                    </div>
+                </div>
             </div>
         </>
     );

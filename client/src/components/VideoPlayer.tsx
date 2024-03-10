@@ -22,7 +22,7 @@ export default function VideoPlayer() {
 
     useEffect(() => {
         if (!inititalized.current) {
-            console.log("first run");
+            // console.log("first run");
             dispatch(getNewVideo());
             inititalized.current = true;
             return;
@@ -32,7 +32,7 @@ export default function VideoPlayer() {
     return (
         <>
             {error !== null ? (
-                <div className="player-wrapper player-wrapper-error">
+                <div className="flex flex-col justify-center items-center sticky h-[45svh] md:h-[80svh]  z-[9] top-0 md:top-12  md:w-1/2 md:pl-4 p-5 mb-5 md:mb-0 border-solid border-[1px] border-[--player-wrapper-border-color] rounded-lg shadow-[0_0_10px_rgba(0,0,0,0.1)] dark:shadow-none bg-[--form-bg]">
                     <p>{error.message}</p>
                     {error.status === 210 && (
                         <button
@@ -46,9 +46,9 @@ export default function VideoPlayer() {
                     )}
                 </div>
             ) : (
-                <div className="player-wrapper">
+                <div className="sticky h-[45svh] md:h-[80svh]  z-[9] top-0 md:top-12  md:w-1/2 md:pl-4 p-5 mb-5 md:mb-0 border-solid border-[1px] border-[--player-wrapper-border-color] rounded-lg shadow-[0_0_10px_rgba(0,0,0,0.1)] dark:shadow-none bg-[--form-bg]">
                     <ReactPlayer
-                        className="react-player"
+                        className="absolute top-0 left-0"
                         url={
                             videoFilename !== ""
                                 ? "/videos/" + videoFilename
@@ -60,6 +60,7 @@ export default function VideoPlayer() {
                         loop={true}
                         width="100%"
                         height="100%"
+                        playsinline={true}
                     />
                 </div>
             )}

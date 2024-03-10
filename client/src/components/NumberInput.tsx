@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { FieldErrors, UseFormRegister, UseFormUnregister } from "react-hook-form";
-import { FormData } from "./Form";
-import { type RegisterName } from "./Form";
 import { get } from "lodash";
+import { FormData, type RegisterName } from "@/types/FormSchema";
 
 interface NumberInputProps {
     //field: ControllerRenderProps<FormData>;

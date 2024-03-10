@@ -2,7 +2,10 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import mongoose, { connect } from "mongoose";
 
-import videoRouter from "./routes/videoRouter";
+import { Server } from "socket.io";
+import { createServer } from "http";
+
+import {videoRouter, initSocket, getNumberAnnotatedVideos} from "./routes/videoRouter";
 import logger from "./logger";
 
 import cors from "cors";
@@ -19,7 +22,7 @@ db.on("error", () => {
 });
 db.on("timeout", () => {
     logger.error("Connection Timeout with MongoDB server 📕");
-})
+});
 db.once("open", function () {
     logger.info("Connected to MongoDB 📗");
 });
@@ -38,33 +41,53 @@ try {
     process.exit(0);
 }
 
-
 // EXPRESS
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-export const timeouts: { a: NodeJS.Timeout; b: () => void; id: string }[] = [];
+// SOCKET.IO
 
 app.use(cors());
 
 app.use(express.json());
 
+const httpServer = createServer(app);
+const io = new Server(httpServer, { cors: { origin: "*" }});
+io.on("connection", async (socket) => {
+    const {annotatedVideos, totalVideos} = await getNumberAnnotatedVideos();
+    socket.emit("progressBarUpdate", {annotatedVideos, totalVideos});
+    logger.info("a user connected " + socket.id + " init progress: " + annotatedVideos + " total videos: " + totalVideos);
+    socket.on("disconnect", () => {
+        logger.info("user disconnected");
+    });
+});
+
+export const timeouts: { a: NodeJS.Timeout; b: () => void; id: string }[] = [];
+
+
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");
 });
 
+initSocket(io);
 app.use("/api/v1/video", videoRouter);
 
 app.use(express.static("public"));
 
-app.listen(port, () => {
+// app.listen(port, () => {
+//     logger.info(`LUS server listening at http://localhost:${port}`);
+// });
+
+
+// app.use("*", (req: Request, res: Response) => {
+//     res.status(404).json({ message: "Not found" });
+// });
+
+httpServer.listen(port, () => {
     logger.info(`LUS server listening at http://localhost:${port}`);
 });
 
-app.use("*", (req: Request, res: Response) => {
-    res.status(404).json({ message: "Not found" });
-});
 
 // Close the connection when the application stops
 ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>

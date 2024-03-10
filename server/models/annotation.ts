@@ -7,7 +7,7 @@ const requiredErrorMessage = {invalid_type_error: "Please select an option"};
 
 export const FormSchema = z.object({
     pleuralLine: z.object({
-        depthInCentimeters: z.number({errorMap: () => ({message: "The number must be between 0 and 1 and have at most one decimal"})}).min(0).max(1).step(0.1),
+        depthInCentimeters: z.number({errorMap: () => ({message: "The number must be between 0 and 1 and have at most one decimal"})}).min(0).max(1).step(0.1).nullable().default(null),
         isRegular: z.boolean(requiredErrorMessage),
         specificsIrregular: z.object({
             isContinuous: z.boolean(requiredErrorMessage).nullable(),
@@ -48,18 +48,22 @@ export const FormSchema = z.object({
                         isFluid: z.boolean(requiredErrorMessage).nullable(),
                     }).nullable().default(null),
                 }).nullable().default(null),
-                isDopplerAvailable: z.boolean(requiredErrorMessage).nullable(),
-                specificsDopplerBronchogram: z.object({
-                    isVascularizationPresent: z.boolean(requiredErrorMessage).nullable(),
-                    isCoherentWithAnatomy: z.boolean(requiredErrorMessage).nullable(),
+                dopplerData: z.object({
+                    isAvailable: z.boolean(requiredErrorMessage).nullable(),
+                    specifics: z.object({
+                        isVascularizationPresent: z.boolean(requiredErrorMessage).nullable(),
+                        isCoherentWithAnatomy: z.boolean(requiredErrorMessage).nullable(),
+                    }).nullable().default(null)
                 }).nullable().default(null),
             }).nullable().default(null),
         }).refine((data) => { return (data.isPresent === true ? data.specifics?.isSingle !== null : true)}, { message: "If the macro-consolidations are present, the specifics must be filled", path: ["specifics.isSingle"]})
         .refine((data) => { return (data.isPresent === true ? data.specifics?.coverageAboveOrEqual50 !== null : true)}, { message: "If the macro-consolidations are present, the specifics must be filled", path: ["specifics.coverageAboveOrEqual50"]})
+        .refine((data) => { return (data.isPresent === true ? data.specifics?.airBronchogram?.isPresent !== null : true)}, { message: "If the macro-consolidations are present, the specifics must be filled", path: ["specifics.airBronchogram.isPresent"]})
+        .refine((data) => { return (data.isPresent === true ? data.specifics?.dopplerData?.isAvailable !== null : true)}, { message: "If the macro-consolidations are present, the specifics must be filled", path: ["specifics.dopplerData.isAvailable"]})
         .refine((data) => { return (data.specifics?.airBronchogram?.isPresent === true ? data.specifics.airBronchogram.specifics?.isStatic !== null : true)}, { message: "If the air bronchogram is present, the specifics must be filled", path: ["specifics.airBronchogram.specifics.isStatic"]})
         .refine((data) => { return (data.specifics?.airBronchogram?.isPresent === true ? data.specifics.airBronchogram.specifics?.isFluid !== null : true)}, { message: "If the air bronchogram is present, the specifics must be filled", path: ["specifics.airBronchogram.specifics.isFluid"]})
-        .refine((data) => { return (data.specifics?.isDopplerAvailable === true ? data.specifics.specificsDopplerBronchogram?.isVascularizationPresent !== null : true)}, { message: "If the Doppler data is available, the specifics must be filled", path: ["specifics.specificsDopplerBronchogram.isVascularizationPresent"]})
-        .refine((data) => { return (data.specifics?.isDopplerAvailable === true ? data.specifics.specificsDopplerBronchogram?.isCoherentWithAnatomy !== null : true)}, { message: "If the Doppler data is available, the specifics must be filled", path: ["specifics.specificsDopplerBronchogram.isCoherentWithAnatomy"]}),
+        .refine((data) => { return (data.specifics?.dopplerData?.isAvailable === true ? data.specifics.dopplerData.specifics?.isVascularizationPresent !== null : true)}, { message: "If the Doppler data is available, the specifics must be filled", path: ["specifics.dopplerData.specifics.isVascularizationPresent"]})
+        .refine((data) => { return (data.specifics?.dopplerData?.isAvailable === true ? data.specifics.dopplerData.specifics?.isCoherentWithAnatomy !== null : true)}, { message: "If the Doppler data is available, the specifics must be filled", path: ["specifics.dopplerData.specifics.isCoherentWithAnatomy"]}),
     }),
     pleuralEffusion: z.object({
         isPresent: z.boolean(requiredErrorMessage),
@@ -70,6 +74,7 @@ export const FormSchema = z.object({
     }).refine((data) => { return data.isPresent === true ? data.specifics?.isCorpusculated !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.isCorpuscolated"]})
     .refine((data) => { return data.isPresent === true ? data.specifics?.isSeptaPresent !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.isSeptaPresent"]}),
     textDescription: z.string(requiredErrorMessage).min(50, {message: "The description must be at least 50 characters long"}),
+    confidence: z.enum(["low", "medium", "high"], requiredErrorMessage),
 });
 
 export type FormData = z.infer<typeof FormSchema>;
@@ -79,11 +84,12 @@ export type AnnotationData ={videoId: string, date: Date, annotations: FormData}
 const annotationSchema = new Schema({
     videoId: { type: Schema.Types.ObjectId, ref: "Videos", required: true },
     date: { type: Date, default: Date.now },
+    userId: { type: Schema.Types.ObjectId, ref: "Users", required: true },
     annotations: {
         pleuralLine: {
             depthInCentimeters: {
                 type: Number,
-                required: true,
+                required: false,
                 checkMinMax: function (val: number) {
                     return val >= 0 && val <= 1;
                 },
@@ -224,41 +230,43 @@ const annotationSchema = new Schema({
                                     },
                             },
                         },
-                        isDopplerAvailable: {
-                            type: Boolean,
-                            required: function (this: AnnotationData) {
-                                return (
-                                    this.annotations.subpleuralSpace.macroConsolidations
-                                        .isPresent === true
-                                );
+                        dopplerData: {
+                            isAvailable: {
+                                type: Boolean,
+                                required: function (this: AnnotationData) {
+                                    return (
+                                        this.annotations.subpleuralSpace.macroConsolidations
+                                            .isPresent === true
+                                    );
+                                },
                             },
-                        },
-                        specificsDopplerBronchogram: {
-                                isVascularizationPresent: {
-                                    type: Boolean,
-                                    required: function (this: AnnotationData) {
-                                        return (
-                                            this.annotations.subpleuralSpace.macroConsolidations
-                                                .isPresent === true &&
-                                            this.annotations.subpleuralSpace.macroConsolidations
-                                                .specifics?.isDopplerAvailable ===
-                                                true
-                                        );
+                            specifics: {
+                                    isVascularizationPresent: {
+                                        type: Boolean,
+                                        required: function (this: AnnotationData) {
+                                            return (
+                                                this.annotations.subpleuralSpace.macroConsolidations
+                                                    .isPresent === true &&
+                                                this.annotations.subpleuralSpace.macroConsolidations
+                                                    .specifics?.dopplerData?.isAvailable ===
+                                                    true
+                                            );
+                                        },
                                     },
-                                },
-                                isCoherentWithAnatomy: {
-                                    type: Boolean,
-                                    required: function (this: AnnotationData) {
-                                        return (
-                                            this.annotations.subpleuralSpace.macroConsolidations
-                                                .isPresent === true &&
-                                            this.annotations.subpleuralSpace.macroConsolidations
-                                                .specifics?.isDopplerAvailable ===
-                                                true
-                                        );
+                                    isCoherentWithAnatomy: {
+                                        type: Boolean,
+                                        required: function (this: AnnotationData) {
+                                            return (
+                                                this.annotations.subpleuralSpace.macroConsolidations
+                                                    .isPresent === true &&
+                                                this.annotations.subpleuralSpace.macroConsolidations
+                                                    .specifics?.dopplerData?.isAvailable ===
+                                                    true
+                                            );
+                                        },
                                     },
-                                },
-                        },
+                            },
+                        }
                 },
             },
         },
@@ -288,6 +296,11 @@ const annotationSchema = new Schema({
             checkLength: function (val: string) {
                 return val.length > 50;
             },
+        },
+        confidence: {
+            type: String,
+            enum: ["low", "medium", "high"],
+            required: true,
         },
     },
 });

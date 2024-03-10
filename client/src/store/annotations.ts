@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 interface Annotations {
     counter: number;
@@ -33,9 +33,12 @@ export const annotationsSlice = createSlice({
         resetAnnotationsCounter: (state) => {
             state.counter = 0;
         },
+        setAnnotationsCounter: (state, action: PayloadAction<number>) => {
+            state.counter = action.payload;
+        }
     },
 });
 
-export const { incrementAnnotationsCounter, decrementAnnotationsCounter, resetAnnotationsCounter } = annotationsSlice.actions;
+export const { incrementAnnotationsCounter, decrementAnnotationsCounter, resetAnnotationsCounter, setAnnotationsCounter } = annotationsSlice.actions;
 
 export const annotationsReducer = annotationsSlice.reducer;
