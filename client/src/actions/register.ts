@@ -1,4 +1,6 @@
 "use server";
+import { sendVerificationEmail } from "@/lib/mail";
+import { createVerificationToken } from "@/lib/verificationToken";
 import { prisma } from "@/prisma";
 import {
     zodUserRegisterSchema,
@@ -18,12 +20,17 @@ export async function registerUser(credentials: zodUserRegisterType) {
                 zodErrors = { ...zodErrors, [issue.path[0]]: issue.message };
             });
             return Object.keys(zodErrors).length > 0
-                    ? { errors: zodErrors, status: 400, ok: false, error: "Registration failed! Please check the form for errors."}
-                    : {
-                          error: "Internal Server Error",
-                          status: 500,
-                          ok: false,
-                      };
+                ? {
+                      errors: zodErrors,
+                      status: 400,
+                      ok: false,
+                      error: "Registration failed! Please check the form for errors.",
+                  }
+                : {
+                      error: "Internal Server Error",
+                      status: 500,
+                      ok: false,
+                  };
         }
         const { email, password } = zodCredentials.data;
         console.log(email, password);
@@ -34,15 +41,27 @@ export async function registerUser(credentials: zodUserRegisterType) {
                 password: encryptedPassword,
             },
         });
-        return { userId: user.id, status: 201, ok: true, success: "Registration successful!" };
+        const verificationToken = await createVerificationToken(email);
+
+        const resultEmail = await sendVerificationEmail(
+            verificationToken.email,
+            verificationToken.token
+        );
+        console.log("resultEmail", resultEmail)
+
+        return {
+            userId: user.id,
+            status: 201,
+            ok: true,
+            success: "Confirmation email sent!",
+        };
     } catch (error) {
         console.error(error);
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2002") {
-                return { error: "User already exists", status: 400, ok: false,};
+                return { error: "User already exists", status: 400, ok: false };
             }
-            
         }
-        return { error: "Internal Server Error", status: 500, ok: false,};
+        return { error: "Internal Server Error", status: 500, ok: false };
     }
 }

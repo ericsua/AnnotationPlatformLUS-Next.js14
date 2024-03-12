@@ -8,14 +8,15 @@ datasource db {
 }
 
 model users {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  email         String   @unique
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  email         String        @unique
   password      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  video         videos?  @relation(fields: [latestVideoId], references: [id])
-  latestVideoId String?  @db.ObjectId
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  video         videos?       @relation(fields: [latestVideoId], references: [id])
+  latestVideoId String?       @db.ObjectId
   annotations   annotations[]
+  emailVerified Boolean       @default(false)
 }
 
 model videos {
@@ -31,10 +32,28 @@ model videos {
 }
 
 model annotations {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  video   videos @relation(fields: [videoId], references: [id])
-  videoId String @db.ObjectId
-  user    users  @relation(fields: [userId], references: [id])
-  userId  String @db.ObjectId
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  video   videos   @relation(fields: [videoId], references: [id])
+  videoId String   @db.ObjectId
+  user    users    @relation(fields: [userId], references: [id])
+  userId  String   @db.ObjectId
   date    DateTime
+}
+
+model verificationTokens {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model resetPasswordTokens {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
 }

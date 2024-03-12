@@ -4,6 +4,7 @@ import {
     DEFAULT_LOGGED_IN_REDIRECT,
     authRoutes,
     apiAuthPrefix,
+    publicRoutes,
 } from "@/routes";
 
 // This function can be marked `async` if using `await` inside
@@ -13,8 +14,18 @@ export default auth((req) => {
 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+    const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
-    console.log("isApiAuthRoute", isApiAuthRoute, "isAuthRoute", isAuthRoute, "isLoggedIn", isLoggedIn, "nextUrl", nextUrl.pathname);
+    // console.log(
+    //     "isApiAuthRoute",
+    //     isApiAuthRoute,
+    //     "isAuthRoute",
+    //     isAuthRoute,
+    //     "isLoggedIn",
+    //     isLoggedIn,
+    //     "nextUrl",
+    //     nextUrl.pathname
+    // );
 
     if (isApiAuthRoute) {
         return NextResponse.next();
@@ -29,7 +40,7 @@ export default auth((req) => {
         return NextResponse.next();
     }
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isPublicRoute) {
         return NextResponse.redirect(new URL("/login", nextUrl));
     }
     return NextResponse.next();

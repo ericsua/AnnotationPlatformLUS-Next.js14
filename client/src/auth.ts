@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import { zodUserLoginSchema } from "./types/Authentication";
 import bcrypt from "bcryptjs";
+import { getUserByEmail, getUserById } from "./lib/user";
 
 export const {
     handlers: { GET, POST },
@@ -57,9 +58,18 @@ export const {
                     return null;
                 }
 
-                const passwordMatch = await bcrypt.compare(password, user.password);
+                const passwordMatch = await bcrypt.compare(
+                    password,
+                    user.password
+                );
 
-                console.log("passwordMatch", passwordMatch, user, user.password, password)
+                console.log(
+                    "passwordMatch",
+                    passwordMatch,
+                    user,
+                    user.password,
+                    password
+                );
 
                 if (!passwordMatch) {
                     return null;
@@ -78,9 +88,39 @@ export const {
                 // }
                 // return null;
             },
-        },
-        ),
+        }),
     ],
+    callbacks: {
+        async signIn({ user, account }) {
+            if (account?.provider !== "credentials") {
+                return false;
+            }
+            if (!user || !user.id) {
+                return false;
+            }
+
+            const existingUser = await getUserById(user.id);
+
+            if (!existingUser || !existingUser.emailVerified) {
+                return false;
+            }
+
+            return true;
+        },
+        async session({ session, token }) {
+            if (token.sub && session.user) {
+                session.user.id = token.sub;
+            }
+            return session;
+        },
+        async jwt({ token }) {
+            if (!token.sub) {
+                return null
+            }
+            
+            return token;
+        },
+    },
     // callbacks: {
     //     async jwt({ token, trigger }) {
     //         //  add user to the token
@@ -96,6 +136,4 @@ export const {
     //         return session;
     //       },
     // }
-
-},);
-
+});

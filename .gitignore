@@ -3,6 +3,8 @@
 client/public/videos/
 client/certificates/
 
+react-email-starter
+
 assets
 .env
 .env*
