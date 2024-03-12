@@ -21,7 +21,7 @@ const CounterAnnotations = dynamic(() => import("./CounterAnnotations"), {
     ssr: false,
 });
 import { incrementAnnotationsCounter } from "@/store/annotations";
-import NumberInput from "./NumberInput";
+import NumberInput from "./NumberInput"; // will be used in the future
 import AnimateSlide from "./AnimateSlide";
 import { FormData, FormSchema, RegisterName } from "@/types/FormSchema";
 
@@ -123,7 +123,8 @@ export default function Form() {
             {
                 loading: "Loading...",
                 success: "Annotation submitted successfully!",
-                error: (error) =>  "An error occurred while submitting the form: " +  error.message
+                error: (error) =>
+                    "An error occurred while submitting the form"
             }
         );
         try {
@@ -229,7 +230,7 @@ export default function Form() {
                     errors={errors}
                     label="Is the pleural line regular or irregular?"
                     options={[true, false]}
-                    optionsLabels={["Regular", "Irregular"]}
+                    optionsLabels={["Regular (smooth)", "Irregular (coarse)"]}
                     isBoolean={true}
                 />
                 <AnimatePresence key="pleuralLineSpecifics">
@@ -247,7 +248,7 @@ export default function Form() {
                                     label="Given that the pleural line is irregular, is it continuous or broken?"
                                     options={[true, false]}
                                     optionsLabels={[
-                                        "Continuous (with consolidations)",
+                                        "Continuous",
                                         "Broken (with or without consolidations)",
                                     ]}
                                     isBoolean={true}
@@ -553,7 +554,7 @@ export default function Form() {
                                                 "subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isVascularizationPresent"
                                             }
                                             errors={errors}
-                                            label="Given that the Doppler data is available, is the vascularization of the bronchogram present?"
+                                            label="Given that the Doppler data is available, is the vascularization of the consolidations present?"
                                             options={[true, false]}
                                             optionsLabels={["Yes", "No"]}
                                             isBoolean={true}
@@ -599,16 +600,13 @@ export default function Form() {
                                     register={register}
                                     unregister={unregister}
                                     registerName={
-                                        "pleuralEffusion.specifics.isCorpusculated"
+                                        "pleuralEffusion.specifics.characterization"
                                     }
                                     errors={errors}
                                     label="Given that the pleural effusion is present, how is it characterized?"
-                                    options={[true, false]}
-                                    optionsLabels={[
-                                        "Corpuscular",
-                                        "Ipo-echoic",
-                                    ]}
-                                    isBoolean={true}
+                                    options={["complex", "ipo-anechoic"]}
+                                    optionsLabels={["Complex", "Ipo-Anechoic"]}
+                                    isBoolean={false}
                                     nesting={1}
                                 />
                                 <RadioBox
@@ -622,7 +620,7 @@ export default function Form() {
                                     options={[true, false]}
                                     optionsLabels={[
                                         "With septa",
-                                        "Without septa",
+                                        "Without septa (= corpuscular)",
                                     ]}
                                     isBoolean={true}
                                     nesting={1}

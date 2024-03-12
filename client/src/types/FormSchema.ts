@@ -370,9 +370,8 @@ export const FormSchema = z.object({
                 .transform((val) => val === "true"),
             specifics: z
                 .object({
-                    isCorpusculated: z
-                        .string(requiredErrorMessage)
-                        .transform((val) => val === "true")
+                    characterization: 
+                        z.enum(["complex", "ipo-anechoic"], requiredErrorMessage)
                         .nullable(),
                     isSeptaPresent: z
                         .string(requiredErrorMessage)
@@ -385,13 +384,13 @@ export const FormSchema = z.object({
         .refine(
             (data) => {
                 return data.isPresent === true
-                    ? data.specifics?.isCorpusculated !== null
+                    ? data.specifics?.characterization !== null
                     : true;
             },
             {
                 message:
                     "If the pleural effusion is present, the specifics must be filled",
-                path: ["specifics.isCorpusculated"],
+                path: ["specifics.characterization"],
             }
         )
         .refine(

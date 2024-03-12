@@ -68,10 +68,10 @@ export const FormSchema = z.object({
     pleuralEffusion: z.object({
         isPresent: z.boolean(requiredErrorMessage),
         specifics: z.object({
-            isCorpusculated: z.boolean(requiredErrorMessage).nullable(),
+            characterization: z.enum(["complex", "ipo-anechoic"], requiredErrorMessage).nullable(),
             isSeptaPresent: z.boolean(requiredErrorMessage).nullable(),
         }).nullable().default(null),
-    }).refine((data) => { return data.isPresent === true ? data.specifics?.isCorpusculated !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.isCorpuscolated"]})
+    }).refine((data) => { return data.isPresent === true ? data.specifics?.characterization !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.characterization"]})
     .refine((data) => { return data.isPresent === true ? data.specifics?.isSeptaPresent !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.isSeptaPresent"]}),
     textDescription: z.string(requiredErrorMessage).min(50, {message: "The description must be at least 50 characters long"}),
     confidence: z.enum(["low", "medium", "high"], requiredErrorMessage),
@@ -135,6 +135,9 @@ const annotationSchema = new Schema({
             specifics: {
                 coverageAboveOrEqual50: {
                     type: Boolean,
+                    required: function (this: AnnotationData) {
+                        this.annotations.verticalArtifacts.isPresent === true;
+                    }
                 },
             },
         },
@@ -276,8 +279,9 @@ const annotationSchema = new Schema({
                 required: true,
             },
             specifics: {
-                    isCorpusculated: {
-                        type: Boolean,
+                    characterization: {
+                        type: String,
+                        enum: ["complex", "ipo-anechoic"],
                         required: function (this: AnnotationData) {
                             return this.annotations.pleuralEffusion.isPresent === true;
                         },
@@ -304,12 +308,5 @@ const annotationSchema = new Schema({
         },
     },
 });
-
-const required = function (this: AnnotationData) {
-    console.log("THISSSSSS", this)
-    return this.annotations.verticalArtifacts.isPresent === true;
-}
-// @ts-ignore
-annotationSchema.path("annotations.verticalArtifacts.specifics.coverageAboveOrEqual50").required(required, "If the vertical artifacts are present, the specifics must be filled");
 
 export default mongoose.model("Annotations", annotationSchema);
