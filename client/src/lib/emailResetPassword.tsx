@@ -11,6 +11,7 @@ import {
     Section,
     Text,
     Button,
+    Font,
 } from "@react-email/components";
 
 import { Tailwind } from "@react-email/tailwind";
@@ -25,7 +26,17 @@ export default function EmailResetPassword({
             <Head />
             <Preview>Reset your password</Preview>
             <Tailwind>
-                <Body className="font-[Inter] bg-gray-100">
+                <Font
+                    fontFamily="Inter"
+                    fontWeight="400"
+                    fontStyle="normal"
+                    fallbackFontFamily="sans-serif"
+                    webFont={{
+                        url: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap",
+                        format: "woff2",
+                    }}
+                />
+                <Body className="bg-gray-100">
                     <Container className="p-8">
                         <Section className="mb-4">
                             <Heading className="text-2xl font-bold text-gray-800">
@@ -50,8 +61,9 @@ export default function EmailResetPassword({
                         <Hr className="my-8" />
                         <Section>
                             <Text className="text-gray-600 text-xs">
-                                This email was sent to you because you requested a
-                                password reset on the Video Annotation Platform.
+                                This email was sent to you because you requested
+                                a password reset on the Video Annotation
+                                Platform.
                             </Text>
                         </Section>
                     </Container>

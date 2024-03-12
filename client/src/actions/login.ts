@@ -1,6 +1,6 @@
 "use server";
 import { signIn, signOut } from "@/auth";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationEmail } from "@/lib/mailNodemailer";
 import { getUserByEmail } from "@/lib/user";
 import {
     createVerificationToken,

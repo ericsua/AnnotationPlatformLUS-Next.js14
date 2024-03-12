@@ -1,6 +1,6 @@
 "use server";
 
-import { sendResetPasswordEmail } from "@/lib/mail";
+import { sendResetPasswordEmail } from "@/lib/mailNodemailer";
 import { createPasswordResetToken } from "@/lib/resetPasswordToken";
 import { getUserByEmail } from "@/lib/user";
 import { zodUserResetSchema, zodUserResetType } from "@/types/Authentication";

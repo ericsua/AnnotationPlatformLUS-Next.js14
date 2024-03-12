@@ -1,5 +1,5 @@
 "use server";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationEmail } from "@/lib/mailNodemailer";
 import { createVerificationToken } from "@/lib/verificationToken";
 import { prisma } from "@/prisma";
 import {
