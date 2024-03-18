@@ -127,12 +127,12 @@ export const getNewVideo = createAsyncThunk(
                 //setVideoName(data.videoName);
             } else if (status === 200) {
                 console.log("ok", jsonData);
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 const pSpinner = document.getElementById("p-spinner");
                 if (pSpinner) {
                     pSpinner.innerText = "Loading next video...";
                 }
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 return { id: jsonData._id, filename: jsonData.filename };
             }
         } catch (error) {
