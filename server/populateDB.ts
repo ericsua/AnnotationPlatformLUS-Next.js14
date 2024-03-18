@@ -7,6 +7,8 @@ import Video from "./models/video";
 import Annotation from "./models/annotation";
 import readline from "readline";
 
+import * as glob from 'glob'
+
 dotenv.config();
 // connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || "error";
@@ -63,8 +65,9 @@ console.log(collections);
 // end connect to MongoDB
 
 // get list of videos from folder
-const videoFolder = "./public/videos";
-const videoFiles = fs.readdirSync(videoFolder);
+const videoFolder = "../client/public/videos/**/*.{mp4,avi,flv,wmv,mov}";
+// const videoFiles = fs.readdirSync(videoFolder);
+const videoFiles = glob.sync(videoFolder);
 
 videoFiles.forEach((file: string) => {
     console.log(file);
@@ -78,7 +81,8 @@ for (const [index, file] of videoFiles.entries()) {
     const video = new Video({
         title: path.basename(file, path.extname(file)),
         description: "",
-        filename: file,
+        // filename from /videos/ folder
+        filename: file.split("public")[1],
         extension: path.extname(file) !== null && path.extname(file).slice(1),
         status: "available",
     });

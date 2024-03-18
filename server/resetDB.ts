@@ -13,43 +13,66 @@ function askQuestion(query: string) {
         output: process.stdout,
     });
 
-    return new Promise(resolve => rl.question(query, ans => {
-        rl.close();
-        resolve(ans);
-    }))
+    return new Promise((resolve) =>
+        rl.question(query, (ans) => {
+            rl.close();
+            resolve(ans);
+        })
+    );
 }
 
-
-const ans = await askQuestion("\nAre you sure you want to reset the database? (yes/no) ");
+const ans = await askQuestion(
+    "\nAre you sure you want to reset the database? (yes/no) "
+);
 
 if (ans !== "yes" && ans !== "y") {
     console.log("Exiting...");
     process.exit(0);
 }
 
-let DELETE_ANNOTATIONS = true;
+const ansDB = await askQuestion("Remote database? (yes/no) ");
 
-const ans2 = await askQuestion("Do you want to delete all annotations? (yes/no) ");
+const USE_REMOTE = ansDB === "yes" || ansDB === "y";
 
-if (ans2 === "no" || ans2 === "n") {
-    DELETE_ANNOTATIONS = false;
+let DELETE_ANNOTATIONS = false;
+
+const ansAnnots = await askQuestion(
+    "Do you want to delete all annotations? (yes/no) "
+);
+
+if (ansAnnots === "yes" || ansAnnots === "y") {
+    DELETE_ANNOTATIONS = true;
 }
 
-const ans3 = await askQuestion("Remote database? (yes/no) ");
+let DELETE_USERS = false;
 
-const USE_REMOTE = ans3 === "yes" || ans3 === "y";
+const ansUsers = await askQuestion(
+    "Do you want to delete all users? (yes/no) "
+);
 
+if (ansUsers === "yes" || ansUsers === "y") {
+    DELETE_USERS = true;
+}
+
+let DELETE_VIDEOS = false;
+
+const ansVideos = await askQuestion(
+    "Do you want to delete all videos? (yes/no) "
+);
+
+if (ansVideos === "yes" || ansVideos === "y") {
+    DELETE_VIDEOS = true;
+}
 
 const MONGO_URI = process.env.MONGO_URI || "error";
 const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 
 try {
-    await mongoose.connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL,);
+    await mongoose.connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL);
 } catch (error) {
     console.log("cannot connect to the database");
 }
 console.log("Connected to MongoDB 📗");
-
 
 const db = mongoose.connection;
 
@@ -62,8 +85,18 @@ for (const video of videos) {
 
 if (DELETE_ANNOTATIONS) {
     await Annotation.deleteMany({}).exec();
-    
 }
+
+if (DELETE_USERS) {
+    await mongoose.connection.dropCollection("users");
+    await mongoose.connection.dropCollection("verificationTokens");
+    await mongoose.connection.dropCollection("resetPasswordTokens");
+}
+
+if (DELETE_VIDEOS) {
+    await Video.deleteMany({}).exec();
+}
+
 console.log("Database reset successfully");
 
 db.close();

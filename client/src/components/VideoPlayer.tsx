@@ -51,7 +51,7 @@ export default function VideoPlayer() {
                         className="absolute top-0 left-0"
                         url={
                             videoFilename !== ""
-                                ? "/videos/" + videoFilename
+                                ?  videoFilename
                                 : ""
                         }
                         //url={"http://localhost:3000/videos/Cov_combatting_Image1.mp4"}

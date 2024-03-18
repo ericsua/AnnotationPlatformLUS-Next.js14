@@ -7,7 +7,7 @@ const url =
         ? "http://localhost:3000"
         : window.location.hostname;
 // console.log("url", url);
-const socket = io(url + ":3000");
+const socket = io(url + ":3000", { path: "/socketIO" });
 
 export default function ProgressBar() {
     const [progress, setProgress] = useState(0);

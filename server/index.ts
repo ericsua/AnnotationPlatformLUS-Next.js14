@@ -48,12 +48,12 @@ const port = process.env.PORT || 3000;
 
 // SOCKET.IO
 
-app.use(cors());
+app.use(cors( { origin: "http://localhost:5174" } ));
 
 app.use(express.json());
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: "*" }});
+const io = new Server(httpServer, { cors: { origin: "*" }, path: "/socketIO" });
 io.on("connection", async (socket) => {
     const {annotatedVideos, totalVideos} = await getNumberAnnotatedVideos();
     socket.emit("progressBarUpdate", {annotatedVideos, totalVideos});
