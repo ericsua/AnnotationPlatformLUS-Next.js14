@@ -5,6 +5,8 @@ client/certificates/
 
 react-email-starter
 
+dist
+
 assets
 .env
 .env*
