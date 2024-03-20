@@ -64,7 +64,7 @@ export const videoSlice = createSlice({
             )
             .addCase(getNewVideo.rejected, (state, action): void => {
                 state.status = "rejected";
-                console.log("getNewVideo.rejected", action);
+                // console.log("getNewVideo.rejected", action);
                 // document.body.classList.remove("overflow-hidden");
                 // document.getElementById("blocker")?.classList.add("hidden");
                 state.id = "";
@@ -81,7 +81,7 @@ export const videoSlice = createSlice({
             })
             .addCase(getNewVideo.pending, (state, action) => {
                 state.status = "pending";
-                console.log("getNewVideo.pending", action);
+                // console.log("getNewVideo.pending", action);
                 // window.scrollTo({ top: 0, behavior: "smooth" });
                 // document.body.classList.add("overflow-hidden");
                 // document.getElementById("blocker")?.classList.remove("hidden");
@@ -110,8 +110,8 @@ export const getNewVideo = createAsyncThunk(
             //const jsonData = await res.json();
             //console.log("prova2")
             if (status === 210) {
-                console.log("210 only Pending videos available");
-                console.log(jsonData);
+                // console.log("210 only Pending videos available");
+                // console.log(jsonData);
                 return thunkAPI.rejectWithValue({
                     status: status,
                     message: jsonData.message,
@@ -124,7 +124,7 @@ export const getNewVideo = createAsyncThunk(
                 });
                 //setVideoName(data.videoName);
             } else if (status === 200) {
-                console.log("ok", jsonData);
+                // console.log("ok", jsonData);
                 await new Promise((resolve) => setTimeout(resolve, 500));
                 const pSpinner = document.getElementById("p-spinner");
                 if (pSpinner) {
@@ -134,7 +134,7 @@ export const getNewVideo = createAsyncThunk(
                 return { id: jsonData._id, filename: jsonData.filename };
             }
         } catch (error) {
-            console.log("error catched", error);
+            // console.log("error catched", error);
 
             return thunkAPI.rejectWithValue({
                 status: 500,

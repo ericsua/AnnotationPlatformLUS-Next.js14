@@ -30,7 +30,7 @@ export default function NewPasswordPage() {
     const [error, setErrorForm] = useState<string | undefined>();
 
     const onSubmit = async (data: zodUserNewPasswordType) => {
-        console.log(data);
+        // console.log(data);
 
         setSuccessForm(undefined);
         setErrorForm(undefined);

@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useForm } from "react-hook-form";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence } from "framer-motion";
@@ -79,13 +79,13 @@ export default function Form() {
 
     useEffect(() => {
         if (videoStatus === "pending") {
-            console.log("Pending: Loading the video...");
+            // console.log("Pending: Loading the video...");
             window.scrollTo({ top: 0, behavior: "smooth" });
             document.body.classList.add("overflow-hidden");
             document.getElementById("blocker")?.classList.remove("hidden");
             dispatch(resetVideoStatus());
         } else if (videoStatus === "fulfilled") {
-            console.log("Fulfilled: Video loaded successfully!");
+            // console.log("Fulfilled: Video loaded successfully!");
             document.body.classList.remove("overflow-hidden");
             document.getElementById("blocker")?.classList.add("hidden");
             toast.success("Video loaded successfully!", {
@@ -93,7 +93,7 @@ export default function Form() {
             });
             dispatch(resetVideoStatus());
         } else if (videoStatus === "rejected") {
-            console.log("Rejected: An error occurred while loading the video.");
+            // console.log("Rejected: An error occurred while loading the video.");
             document.body.classList.remove("overflow-hidden");
             document.getElementById("blocker")?.classList.add("hidden");
             toast.error(
@@ -108,7 +108,7 @@ export default function Form() {
     }, [videoStatus]);
 
     const onSubmit = async (data: FormData) => {
-        console.log("data to POST", data);
+        // console.log("data to POST", data);
         // @ts-ignore
         // data.verticalArtifacts.isPresent = 3;
         // window.alert("data to POST: " + JSON.stringify(data));
@@ -130,30 +130,30 @@ export default function Form() {
         try {
             const { status } = await postPromise;
             if (status && status === 201) {
-                console.log("annotation submitted successfully");
+                // console.log("annotation submitted successfully");
                 dispatch(setVideoID(""));
                 dispatch(setVideoFilename(""));
                 dispatch(getNewVideo());
                 dispatch(incrementAnnotationsCounter());
                 reset();
             }
-            console.log("status", status);
+            // console.log("status", status);
             //reset();
         } catch (error) {
-            console.log("error catched", error);
+            // console.log("error catched", error);
             try {
                 const errorObj = JSON.parse((error as Error).message);
                 const status = errorObj.status;
                 const jsonData = errorObj.jsonData;
-                console.log("error zod data", jsonData);
+                // console.log("error zod data", jsonData);
                 if (status && status === 455 && jsonData) {
-                    console.log("zod validation error");
+                    // console.log("zod validation error");
                     const zodMessage = jsonData.message;
                     const zodErrors = jsonData.errors;
-                    console.log("zodMessage", zodMessage);
-                    console.log("zodErrors", zodErrors);
+                    // console.log("zodMessage", zodMessage);
+                    // console.log("zodErrors", zodErrors);
                     const zodErrorsKeys = Object.keys(zodErrors);
-                    console.log("zodErrorsKeys", zodErrorsKeys);
+                    // console.log("zodErrorsKeys", zodErrorsKeys);
                     // zodErrorsKeys.forEach((key) => {
                     //     setError(key as RegisterName, {
                     //         type: "server",
@@ -172,7 +172,7 @@ export default function Form() {
                     }
                 }
             } catch (e) {
-                console.log("not a 455 (Zod) error", e);
+                // console.log("not a 455 (Zod) error", e);
             }
         }
         //reset();

@@ -43,7 +43,7 @@ export async function loginUser(credentials: zodUserLoginType) {
     if (!existingUser.emailVerified) {
         const verificationToken = await createVerificationToken(existingUser.email);
         const resultEmail =  await sendVerificationEmail(existingUser.email, verificationToken.token);
-        console.log("resultEmail", resultEmail)
+        // console.log("resultEmail", resultEmail)
         return {
             status: 400,
             message: "Email not verified, confirmation email sent",
@@ -55,7 +55,7 @@ export async function loginUser(credentials: zodUserLoginType) {
     try {
         await signIn("credentials", { email, password, redirect: false });
     } catch (error) {
-        console.error(error);
+        console.error("Error while signing-in", error);
         if (error instanceof AuthError) {
             switch (error.type) {
                 case "CredentialsSignin": {

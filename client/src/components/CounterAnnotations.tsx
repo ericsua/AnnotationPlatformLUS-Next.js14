@@ -10,22 +10,12 @@ export default function CounterAnnotations() {
     const dispatch = useAppDispatch();
     const session = useSession();
 
-    const dbAnnotations = async () => {
-        console.log("session", session)
-        if (!session || !session.data?.user?.email) return;
-        const counter = await counterAnnotations(session.data.user.email);
-        console.log("counter db", counter, annotations)
-        if (counter >= 0) {
-            annotations !== counter && dispatch(setAnnotationsCounter(counter));
-        }
-    }
-
     useEffect( () => {
         (async () => {
-            console.log("session", session)
+            // console.log("session", session)
             if (!session || !session.data?.user?.email) return;
             const counter = await counterAnnotations(session.data.user.email);
-            console.log("counter db", counter, annotations)
+            // console.log("counter db", counter, annotations)
             if (counter >= 0) {
                 annotations !== counter && dispatch(setAnnotationsCounter(counter));
             }

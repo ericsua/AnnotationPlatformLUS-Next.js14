@@ -38,7 +38,7 @@ export const {
 
                 const { email, password } = validateCredentials.data;
 
-                console.log("credentials", credentials, email, password);
+                // console.log("credentials", credentials, email, password);
                 if (
                     !email ||
                     !password ||
@@ -64,30 +64,19 @@ export const {
                     user.password
                 );
 
-                console.log(
-                    "passwordMatch",
-                    passwordMatch,
-                    user,
-                    user.password,
-                    password
-                );
+                // console.log(
+                //     "passwordMatch",
+                //     passwordMatch,
+                //     user,
+                //     user.password,
+                //     password
+                // );
 
                 if (!passwordMatch) {
                     return null;
                 } else {
                     return user;
                 }
-
-                // if (user) {
-                //     // Any object returned will be saved in `user` property of the JWT
-                //     return user;
-                // } else {
-                //     // If you return null then an error will be displayed advising the user to check their details.
-                //     return null;
-
-                //     // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-                // }
-                // return null;
             },
         }),
     ],
@@ -122,19 +111,4 @@ export const {
             return token;
         },
     },
-    // callbacks: {
-    //     async jwt({ token, trigger }) {
-    //         //  add user to the token
-    //         console.log("callback jwt", token, trigger);
-    //         if (trigger === "update") {
-    //             return token;
-    //         }
-    //         return token;
-    //       },
-    //       async session({ session, token, user }) {
-    //         //  update session from token
-    //         console.log("callback session", session, token, user);
-    //         return session;
-    //       },
-    // }
 });

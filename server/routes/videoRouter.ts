@@ -166,8 +166,8 @@ videoRouter.get("/", async (req: Request, res: Response) => {
             const updatedVideo = await Video.findById(randomVideo._id).exec();
 
             if (!updatedVideo) {
-                console.error(
-                    `[server]: [timeout] Video not found in timeout function (id: ${randomVideo._id})`
+                logger.error(
+                    `[timeout] Video not found in timeout function (id: ${randomVideo._id})`
                 );
                 return;
             }
@@ -230,28 +230,6 @@ videoRouter.get("/", async (req: Request, res: Response) => {
     }
 });
 
-videoRouter.put("/:id", async (req: Request, res: Response) => {
-    const video = await Video.findById(req.params.id);
-    if (video && video.status === "available") {
-        video.status = "pending";
-        if (!(await handleSave(video, res, "PUT", "video"))) {
-            return;
-        }
-        logger.info(`[put] Video status updated to pending (id: ${video._id})`);
-        res.status(200).json({ message: "Video status updated to pending" });
-    } else {
-        if (video && video.status === "pending") {
-            logger.error(`[PUT] Video already pending (id: ${video._id})`);
-            res.status(400).json({ message: "Video already pending" });
-        } else if (video && video.status === "annotated") {
-            logger.error(`[PUT] Video already annotated (id: ${video._id})`);
-            res.status(400).json({ message: "Video already annotated" });
-        }
-        logger.error(`[PUT] Video not found (id: ${req.params.id})`);
-        res.status(404).json({ message: "Video not found" });
-    }
-});
-
 videoRouter.post(
     "/:id",
     async (req: Request, res: Response, next: NextFunction) => {
@@ -270,7 +248,7 @@ videoRouter.post(
                 video.status === "annotated")
         ) {
             const {data: reqAnnotations, userID} = req.body;
-            console.log("reqAnnotations", reqAnnotations, "userID", userID);
+            // console.log("reqAnnotations", reqAnnotations, "userID", userID);
             const zodAnnotation = FormSchema.safeParse(reqAnnotations);
             if (!zodAnnotation.success) {
                 logger.error(
@@ -291,7 +269,7 @@ videoRouter.post(
                 userId: userID,
             });
 
-            console.log("annotation to save with post", annotation);
+            // console.log("annotation to save with post", annotation);
             const {
                 errorStatus: errorStatusAnnotation,
                 message: messageAnnotation,
@@ -310,7 +288,7 @@ videoRouter.post(
                     "POST",
                     "video status to annotated"
                 );
-            console.log("[POST] Video status updated to annotated", video);
+            // console.log("[POST] Video status updated to annotated", video);
             if (errorStatusVideo !== 0) {
                 res.status(errorStatusVideo).json({ message: messageVideo });
                 return;
@@ -320,7 +298,7 @@ videoRouter.post(
                 message: "Annotation submitted successfully!",
             });
             const numAnnotatedVideosSocket = await getNumberAnnotatedVideos();
-            console.log("numAnnotatedVideosSocket", numAnnotatedVideosSocket);
+            // console.log("numAnnotatedVideosSocket", numAnnotatedVideosSocket);
             socketIO?.emit("progressBarUpdate", numAnnotatedVideosSocket);
             return;
         } else {

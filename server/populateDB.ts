@@ -1,10 +1,8 @@
-import mongoose, { Schema, model, connect } from "mongoose";
-import fs from "fs";
+import mongoose, { connect } from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 
 import Video from "./models/video";
-import Annotation from "./models/annotation";
 import readline from "readline";
 
 import * as glob from 'glob'

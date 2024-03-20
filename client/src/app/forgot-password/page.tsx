@@ -23,7 +23,7 @@ export default function ForgotPassword() {
     const [error, setError] = useState<string | undefined>();
 
     const onSubmit = async (data: zodUserResetType) => {
-        console.log(data);
+        // console.log(data);
 
         setSuccess(undefined);
         setError(undefined);

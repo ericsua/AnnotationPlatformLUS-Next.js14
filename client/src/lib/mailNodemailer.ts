@@ -17,7 +17,7 @@ const transport = nodemailer.createTransport({
 
 try {
     const verify = transport.verify().then(() => {
-        console.log("Nodemailer: connected")
+        // console.log("Nodemailer: connected")
     }).catch((error) => {
         console.log("Nodemailer: cannot connect", error)
     })

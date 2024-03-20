@@ -13,15 +13,15 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
         return Promise.reject("You must be logged in to submit an annotation.");
     }
 
-    console.log("user email", userEmail, "videoID", videoID, "data", data)
+    // console.log("user email", userEmail, "videoID", videoID, "data", data)
 
-    console.log("before prisma")
+    // console.log("before prisma")
     const user = await prisma.users.findUnique({
         where: {
             email: userEmail
         }
     })
-    console.log("user", user)
+    // console.log("user", user)
     if (!user || !user.id) {
         return Promise.reject("User not found");
     }
@@ -32,12 +32,12 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
         return Promise.reject("User's assigned video mismatch");
     }
     const userID = user.id;
-    console.log("user from db", user.id, "id from db", user.latestVideoId, "id from request", videoID)
+    // console.log("user from db", user.id, "id from db", user.latestVideoId, "id from request", videoID)
     const dbVideoID = user.latestVideoId
 
-    console.log("after prisma", userID, dbVideoID, videoID)
-    console.log("data to POST", data, "session", session);
-    console.log("stringify", JSON.stringify({data: data, userID: userID}))
+    // console.log("after prisma", userID, dbVideoID, videoID)
+    // console.log("data to POST", data, "session", session);
+    // console.log("stringify", JSON.stringify({data: data, userID: userID}))
     const res = await fetch(serverUrlBase + "/api/v1/video/" + videoID, {
         method: "POST",
         headers: {
@@ -48,8 +48,8 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
     const jsonData = await res.json();
     if (!res.ok) {
         if (res.status == 455) {
-            console.log("455!!!!");
-            //throw "ciao"
+            // console.log("455!!!!");
+            console.log("Zod Error while submitting the form", res.status)
             return Promise.reject(
                 new Error(JSON.stringify({ status: res.status, jsonData }))
             );
@@ -60,7 +60,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
     }
 
     if (res.status === 201) {
-        console.log("annotation submitted successfully", jsonData);
+        // console.log("annotation submitted successfully", jsonData);
         try {
             await prisma.videos.update({
                 where: {
@@ -112,7 +112,7 @@ export const fetchGetNewVideo = async () => {
         const errorFetch = "";
         if (res.status === 214) return { status: 214, jsonData, errorFetch};
         if (res.status === 210) return { status: 210,  jsonData, errorFetch};
-        console.log("fetchGetNewVideo", status, jsonData, errorFetch);
+        // console.log("fetchGetNewVideo", status, jsonData, errorFetch);
         prisma.users.update({
             where: {
                 email: userEmail

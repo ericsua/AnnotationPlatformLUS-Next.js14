@@ -36,7 +36,7 @@ export default function RegisterPage() {
         await new Promise((resolve) =>
             setTimeout(resolve, Math.random() * 1000 * 2)
         );
-        console.log("registration to send", data);
+        // console.log("registration to send", data);
 
         setErrorForm("");
         setSuccessForm("");
@@ -49,20 +49,20 @@ export default function RegisterPage() {
             error: "Registration failed",
         }, {position: "top-center"});
         const res = await resPromise;
-        console.log("res", res);
+        // console.log("res", res);
         setErrorForm(res.error);
         setSuccessForm(res.success);
         if (!res.ok) {
             try {
                 const errors: any = res.errors;
                 if (!errors) return;
-                console.log("register error", res);
+                // console.log("register error", res);
                 const errorsKeys = Object.keys(errors);
                 errorsKeys.forEach((key) => {
-                    console.error(
-                        key as keyof zodUserRegisterType,
-                        errors[key]
-                    );
+                    // console.error(
+                    //     key as keyof zodUserRegisterType,
+                    //     errors[key]
+                    // );
                     setError(key as keyof zodUserRegisterType, {
                         type: "server",
                         message: errors[key],
@@ -76,7 +76,7 @@ export default function RegisterPage() {
             return;
         }
         reset();
-        console.log("register response", res);
+        // console.log("register response", res);
 
         
     }

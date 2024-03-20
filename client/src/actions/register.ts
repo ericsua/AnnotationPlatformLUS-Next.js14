@@ -35,7 +35,7 @@ export async function registerUser(credentials: zodUserRegisterType) {
                   };
         }
         const { email, password } = zodCredentials.data;
-        console.log(email, password);
+        // console.log(email, password);
 
         // const existingUser = await getUserByEmail(email);
         // if (existingUser) {
@@ -55,7 +55,7 @@ export async function registerUser(credentials: zodUserRegisterType) {
             verificationToken.email,
             verificationToken.token
         );
-        console.log("resultEmail", resultEmail)
+        // console.log("resultEmail", resultEmail)
 
         return {
             userId: user.id,

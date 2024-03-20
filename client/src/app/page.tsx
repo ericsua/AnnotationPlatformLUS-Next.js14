@@ -13,7 +13,7 @@ const ProgressBar = dynamic(() => import("@/components/ProgressBar"), {
 });
 
 export default function Home() {
-    console.log("first render Home.tsx");
+    // console.log("first render Home.tsx");
 
     return (
         <>

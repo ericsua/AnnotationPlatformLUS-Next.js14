@@ -54,12 +54,12 @@ export default function LoginPage() {
         const { status, message, error, success, ok } = await resPromise;
         setSuccessForm(success);
         setErrorForm(error);
-        console.log("status", status, message);
+        // console.log("status", status, message);
         await getSession();
         if (!ok) {
             return;
         }
-        console.log("login response", message);
+        // console.log("login response", message);
         reset();
 
         await new Promise((resolve) => {

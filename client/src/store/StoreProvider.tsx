@@ -8,7 +8,7 @@ export default function StoreProvider({
 }: {
     children: React.ReactNode;
 }) {
-    console.log("first render StoreProvider.tsx")
+    // console.log("first render StoreProvider.tsx")
     useEffect(() => {}, []);
     const storeRef = useRef<AppStore>();
     if (!storeRef.current) {

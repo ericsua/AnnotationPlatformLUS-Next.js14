@@ -16,7 +16,7 @@ export default function ProgressBar() {
 
     useEffect(() => {
         socket.on("progressBarUpdate", (newProgress) => {
-            console.log("socket update arrived", newProgress);
+            // console.log("socket update arrived", newProgress);
             const { annotatedVideos, totalVideos } = newProgress;
             setProgress(annotatedVideos);
             setTotalVideos(totalVideos);
