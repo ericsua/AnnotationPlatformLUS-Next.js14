@@ -371,7 +371,7 @@ export const FormSchema = z.object({
             specifics: z
                 .object({
                     characterization: 
-                        z.enum(["complex", "ipo-anechoic"], requiredErrorMessage)
+                        z.enum(["complex", "hypo-anechoic"], requiredErrorMessage)
                         .nullable(),
                     isSeptaPresent: z
                         .string(requiredErrorMessage)

@@ -68,7 +68,7 @@ export const FormSchema = z.object({
     pleuralEffusion: z.object({
         isPresent: z.boolean(requiredErrorMessage),
         specifics: z.object({
-            characterization: z.enum(["complex", "ipo-anechoic"], requiredErrorMessage).nullable(),
+            characterization: z.enum(["complex", "hypo-anechoic"], requiredErrorMessage).nullable(),
             isSeptaPresent: z.boolean(requiredErrorMessage).nullable(),
         }).nullable().default(null),
     }).refine((data) => { return data.isPresent === true ? data.specifics?.characterization !== null : true }, { message: "If the pleural effusion is present, the specifics must be filled", path: ["specifics.characterization"]})
@@ -281,7 +281,7 @@ const annotationSchema = new Schema({
             specifics: {
                     characterization: {
                         type: String,
-                        enum: ["complex", "ipo-anechoic"],
+                        enum: ["complex", "hypo-anechoic"],
                         required: function (this: AnnotationData) {
                             return this.annotations.pleuralEffusion.isPresent === true;
                         },

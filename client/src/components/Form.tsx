@@ -364,7 +364,7 @@ export default function Form() {
                         "subpleuralSpace.microConsolidations.isPresent"
                     }
                     errors={errors}
-                    label="Are micro-consolidations present? (ipo-echoic nodules smaller in diameter than 5 mm)"
+                    label="Are micro-consolidations present? (hypo-echoic nodules smaller in diameter than 5 mm)"
                     options={[true, false]}
                     optionsLabels={["Yes", "No"]}
                     isBoolean={true}
@@ -415,7 +415,7 @@ export default function Form() {
                         "subpleuralSpace.macroConsolidations.isPresent"
                     }
                     errors={errors}
-                    label="Are macro-consolidations present? (ipo-echoic nodules larger in diameter than 5 mm)"
+                    label="Are macro-consolidations present? (hypo-echoic nodules larger in diameter than 5 mm)"
                     options={[true, false]}
                     optionsLabels={["Yes", "No"]}
                     isBoolean={true}
@@ -604,8 +604,8 @@ export default function Form() {
                                     }
                                     errors={errors}
                                     label="Given that the pleural effusion is present, how is it characterized?"
-                                    options={["complex", "ipo-anechoic"]}
-                                    optionsLabels={["Complex", "Ipo-Anechoic"]}
+                                    options={["complex", "hypo-anechoic"]}
+                                    optionsLabels={["Complex", "Hypo-anechoic"]}
                                     isBoolean={false}
                                     nesting={1}
                                 />
@@ -635,7 +635,7 @@ export default function Form() {
                     unregister={unregister}
                     registerName={"textDescription"}
                     errors={errors}
-                    label="Describe with free text whether the overall quality is sufficient or not to be evaluated confidently. Please include any additional information that you consider relevant, e.g. problems with the video."
+                    label="Describe with free text whether the overall quality is sufficient or not to be evaluated confidently. Please include any additional information that you consider relevant, e.g. problems with the video, important points not asked in the form."
                     nameInRequired="free"
                     minLength={50}
                 />

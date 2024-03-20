@@ -12,13 +12,17 @@ const transport = nodemailer.createTransport({
         user: process.env.SMTP_EMAIL,
         pass: process.env.SMTP_PASS,
     },
+    secure: true,
 })
 
 try {
-    const verify = transport.verify()
-    console.log(verify)
+    const verify = transport.verify().then(() => {
+        console.log("Nodemailer: connected")
+    }).catch((error) => {
+        console.log("Nodemailer: cannot connect", error)
+    })
 } catch (error) {
-    console.log(error)
+    console.log("Nodemailer: cannot connect", error)
 }
 
 export const sendVerificationEmail = async (email: string, token: string) => {

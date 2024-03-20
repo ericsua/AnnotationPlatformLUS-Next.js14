@@ -12,6 +12,8 @@ import { hash } from "bcrypt";
 export async function registerUser(credentials: zodUserRegisterType) {
     try {
         // console.log("credentials", credentials)
+        // trim the spaces from the email
+        credentials.email = credentials.email.trim();
         const zodCredentials = zodUserRegisterSchema.safeParse(credentials);
         // console.log("zodCredentials", zodCredentials)
         let zodErrors = {};
@@ -34,6 +36,12 @@ export async function registerUser(credentials: zodUserRegisterType) {
         }
         const { email, password } = zodCredentials.data;
         console.log(email, password);
+
+        // const existingUser = await getUserByEmail(email);
+        // if (existingUser) {
+        //     return { error: "User already exists", status: 400, ok: false };
+        // }
+
         const encryptedPassword = await hash(password, 10);
         const user = await prisma.users.create({
             data: {

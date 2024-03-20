@@ -6,6 +6,8 @@ import { getUserByEmail } from "@/lib/user";
 import { zodUserResetSchema, zodUserResetType } from "@/types/Authentication";
 
 export async function forgotPassword(data: zodUserResetType) {
+    // trim the spaces from the email
+    data.email = data.email.trim();
     const validateSchema = zodUserResetSchema.safeParse(data);
 
     if (!validateSchema.success) {

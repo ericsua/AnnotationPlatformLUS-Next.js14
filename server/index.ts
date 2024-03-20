@@ -34,8 +34,8 @@ db.on("reconnected", function () {
 });
 
 try {
-    // await connect(MONGO_URI);
     await connect(MONGO_URI);
+    //await connect(MONGO_URI_LOCAL);
 } catch (err) {
     logger.error("Error connecting to MongoDB: ", err);
     process.exit(0);
@@ -68,6 +68,10 @@ export const timeouts: { a: NodeJS.Timeout; b: () => void; id: string }[] = [];
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");
+});
+
+app.get("/api", (req: Request, res: Response) => {
+    res.send("Hello World API!");
 });
 
 initSocket(io);

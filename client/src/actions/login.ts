@@ -15,7 +15,8 @@ export async function loginUser(credentials: zodUserLoginType) {
             resolve(null);
         }, Math.random() * 1000 * 2)
     );
-
+    // trim the spaces from the email
+    credentials.email = credentials.email.trim();
     const validateCredentials = zodUserLoginSchema.safeParse(credentials);
     if (!validateCredentials.success) {
         return {
