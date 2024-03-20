@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { FieldErrors, UseFormRegister, UseFormUnregister } from "react-hook-form";
-import { FormData } from "./Form";
+import { FormData } from "@/types/FormSchema";
 import RadioInput from "./RadioInput";
-import { type RegisterName } from "./Form";
+import { type RegisterName } from "@/types/FormSchema";
 import { get } from "lodash";
 
 interface RadioBoxProps {

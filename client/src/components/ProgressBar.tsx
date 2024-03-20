@@ -4,10 +4,11 @@ import io from "socket.io-client";
 
 const url =
     typeof window === "undefined"
-        ? "http://localhost:3000"
+        ? process.env.SERVER_URL_BASE
         : window.location.hostname;
 // console.log("url", url);
-const socket = io(url + ":3000", { path: "/socketIO" });
+const port = process.env.NODE_ENV === 'development' ? ':'+process.env.SERVER_PORT : ''
+const socket = io(url + port, { path: "/socketIO" });
 
 export default function ProgressBar() {
     const [progress, setProgress] = useState(0);

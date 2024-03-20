@@ -8,8 +8,6 @@ const VideoPlayer = dynamic(() => import("@/components/VideoPlayer"), {
 });
 import SettingsLoader from "@/components/SettingsLoader";
 import SkeletonVideoPlayer from "@/components/SkeletonVideoPlayer";
-import { Toaster } from "react-hot-toast";
-// import ProgressBar from "@/components/ProgressBar";
 const ProgressBar = dynamic(() => import("@/components/ProgressBar"), {
     ssr: false,
 });

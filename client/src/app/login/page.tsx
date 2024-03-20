@@ -2,7 +2,7 @@
 import Navbar from "@/components/Navbar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodUserLoginSchema, zodUserLoginType } from "@/types/Authentication";
 import toast from "react-hot-toast";
@@ -14,10 +14,8 @@ import FormWrapperAuth from "@/components/FormWrapperAuth";
 import TitleFormAuth from "@/components/TitleFormAuth";
 import FormSuccess from "@/components/FormSuccess";
 import FormError from "@/components/FormError";
-import { set } from "lodash";
 import { useRouter } from "next/navigation";
 
-export { SessionProvider } from "next-auth/react";
 
 export default function LoginPage() {
     const {
@@ -67,12 +65,12 @@ export default function LoginPage() {
         await new Promise((resolve) => {
             toast.loading("Redirecting...", {
                 position: "top-center",
-                duration: 3000,
+                duration: 1000,
             });
             setTimeout(() => {
                 router.push("/");
                 resolve(null);
-            }, 3000);
+            }, 1000);
         });
     };
 

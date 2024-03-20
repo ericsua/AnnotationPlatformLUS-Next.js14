@@ -2,8 +2,6 @@
 import { fetchGetNewVideo } from "@/actions/videos";
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const serverUrlBase = process.env.SERVER_URL_BASE;
-
 type TVideoError = { status: number; message: string } | null;
 
 export interface VideoState {

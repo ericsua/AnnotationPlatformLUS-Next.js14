@@ -7,12 +7,14 @@ import express, {
 } from "express";
 import Video from "../models/video";
 import Annotation, { FormSchema } from "../models/annotation";
-import mongoose, { Model } from "mongoose";
+import mongoose from "mongoose";
 import { timeouts } from "../index";
 import logger from "../logger";
 import crypto from "crypto";
 import { Server } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+
+const TIME_RESERVE_VIDEO = 60 * 10; // seconds
 
 const videoRouter: Router = express.Router();
 
@@ -211,7 +213,7 @@ videoRouter.get("/", async (req: Request, res: Response) => {
         };
 
         const randomID = crypto.randomUUID();
-        const refTimeout = setTimeout(callbackTimeout, 20000, randomID); //*60);
+        const refTimeout = setTimeout(callbackTimeout, TIME_RESERVE_VIDEO * 1000, randomID); //*60);
         timeouts.push({ a: refTimeout, b: callbackTimeout, id: randomID });
 
         logger.info(

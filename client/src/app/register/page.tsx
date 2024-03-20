@@ -9,7 +9,6 @@ import {
     zodUserRegisterType,
 } from "@/types/Authentication";
 import toast from "react-hot-toast";
-import { auth } from "@/auth";
 import ButtonAuth from "@/components/ButtonAuth";
 import { InputAuthRegister } from "@/components/InputAuth";
 import TitleFormAuth from "@/components/TitleFormAuth";
@@ -38,44 +37,6 @@ export default function RegisterPage() {
             setTimeout(resolve, Math.random() * 1000 * 2)
         );
         console.log("registration to send", data);
-        // const resPromise = fetch("/api/auth/register", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(data),
-        // });
-
-        // toast.promise(resPromise, {
-        //     loading: "Sending data...",
-        //     success: (data) => {if (!data.ok) throw new Error("Registration failed"); return "Registered successfully";},
-        //     error: "Registration failed",
-        // });
-        // const res = await resPromise;
-        // if (!res.ok) {
-        //     try {
-        //         const json = await res.json();
-        //         console.log("register error", json);
-        //         const { errors } = json;
-        //         const errorsKeys = Object.keys(errors);
-        //         errorsKeys.forEach((key) => {
-        //             console.error(
-        //                 key as keyof zodUserRegisterType,
-        //                 errors[key]
-        //             );
-        //             setError(key as keyof zodUserRegisterType, {
-        //                 type: "server",
-        //                 message: errors[key],
-        //             });
-        //         });
-        //         return;
-        //     } catch (error) {
-        //         console.error("registration error", error);
-        //     }
-
-        //     return;
-        // }
-        // console.log("register response", res);
 
         setErrorForm("");
         setSuccessForm("");

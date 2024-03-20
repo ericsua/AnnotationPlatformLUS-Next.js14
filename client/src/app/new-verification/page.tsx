@@ -15,7 +15,7 @@ export default function NewVerificationPage() {
     const onSubmit = useCallback(() => {
         if (success || error) return;
         const wait = new Promise((resolve) =>
-            setTimeout(() => resolve(null), 3000)
+            setTimeout(() => resolve(null), 1000)
         );
         wait.then(() => {
             if (!token) {

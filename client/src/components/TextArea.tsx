@@ -34,19 +34,6 @@ export default function TextArea({
                 <textarea
                     className="freetext  shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-[--freetext-bg] dark:border-gray-700 dark:text-white dark:focus:ring-gray-600"
                     {...register(registerName)}
-                    // {
-                    //     required:
-                    //         "The " +
-                    //         nameInRequired +
-                    //         " description is required.",
-                    //     minLength: {
-                    //         value: minLength,
-                    //         message:
-                    //             "Text must be at least " +
-                    //             minLength +
-                    //             " characters long.",
-                    //     },
-                    // }))}
                     placeholder={
                         "Enter the " + nameInRequired + " description here..."
                     }
