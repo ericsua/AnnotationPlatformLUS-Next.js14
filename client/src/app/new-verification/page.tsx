@@ -6,14 +6,18 @@ import { useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { SyncLoader, BeatLoader } from "react-spinners";
 
+// Page to confirm the verification of the email
 export default function NewVerificationPage() {
+    // Get the token from the URL, since it was set in the verification email
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const [error, setError] = useState<string | undefined>();
     const [success, setSuccess] = useState<string | undefined>();
 
+    // Submit the form to verify the email
     const onSubmit = useCallback(() => {
         if (success || error) return;
+        // Artificial delay 
         const wait = new Promise((resolve) =>
             setTimeout(() => resolve(null), 1000)
         );
@@ -22,6 +26,7 @@ export default function NewVerificationPage() {
                 setError("No token provided");
                 return;
             }
+            // Complete verification of the email in the server
             newVerification(token)
                 .then((data) => {
                     setSuccess(data.success);
@@ -33,6 +38,7 @@ export default function NewVerificationPage() {
         });
     }, [token, success, error]);
 
+    // Run the onSubmit function when the page loads
     useEffect(() => {
         onSubmit();
     }, [onSubmit]);

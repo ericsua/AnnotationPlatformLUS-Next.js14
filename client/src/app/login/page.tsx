@@ -16,8 +16,9 @@ import FormSuccess from "@/components/FormSuccess";
 import FormError from "@/components/FormError";
 import { useRouter } from "next/navigation";
 
-
+// Page to login
 export default function LoginPage() {
+    // Form for the login process
     const {
         register,
         handleSubmit,
@@ -35,10 +36,13 @@ export default function LoginPage() {
     const [errorForm, setErrorForm] = useState<string | undefined>("");
     const [successForm, setSuccessForm] = useState<string | undefined>("");
 
+    // Submit the form to login
     const onSubmit = async (data: zodUserLoginType) => {
+        // reset the success and error messages
         setSuccessForm("");
         setErrorForm("");
 
+        // Send the data to the server (no await here, the toaster and later the setSuccess/setError will handle the response)
         const resPromise = loginUser(data);
 
         //console.log("resPromise", resPromise);
@@ -46,22 +50,30 @@ export default function LoginPage() {
         toast.promise(resPromise, {
             loading: "Sending data...",
             success: (data) => {
+                // function to run when the promise resolves, as a custom way to check if everything went well
                 if (!data.ok) throw new Error("Login failed");
                 return "Login successful!";
             },
             error: "Login failed",
         }, {position: "top-center"});
+
         const { status, message, error, success, ok } = await resPromise;
+        // Show the success or error messages from the server, if needed
         setSuccessForm(success);
         setErrorForm(error);
         // console.log("status", status, message);
+
+        // If the login was successful, redirect to the home page after a small delay
         await getSession();
         if (!ok) {
             return;
         }
         // console.log("login response", message);
-        reset();
 
+        // Reset the form
+        reset();
+        
+        // Redirect to the home page while showing a loading toast message
         await new Promise((resolve) => {
             toast.loading("Redirecting...", {
                 position: "top-center",

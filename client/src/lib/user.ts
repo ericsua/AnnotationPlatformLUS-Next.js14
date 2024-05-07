@@ -1,5 +1,6 @@
 import { prisma } from "@/prisma";
 
+// Helper function to get user by email from the database
 export async function getUserByEmail(email: string) {
     try {
         const user = await prisma.users.findUnique({
@@ -11,6 +12,7 @@ export async function getUserByEmail(email: string) {
     }
 }
 
+// Helper function to get user by ID from the database
 export async function getUserById(id: string) {
     try {
         const user = await prisma.users.findUnique({

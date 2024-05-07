@@ -16,6 +16,7 @@ import {
 
 import { Tailwind } from "@react-email/tailwind";
 
+// React component for a fancy email to reset the password
 export default function EmailResetPassword({
     resetLink,
 }: {

@@ -5,11 +5,14 @@ interface Annotations {
 }
 
 function getInitialAnnotationsCounter() {
+    // execute only on the client side
     if (typeof window !== "undefined") {
+        // get the annotationsCounter from the localStorage
         const annotationsCounterLocalStorage = window.localStorage.getItem("annotationsCounter");
         if (annotationsCounterLocalStorage !== null) {
             return { counter: parseInt(annotationsCounterLocalStorage) }
         }
+        // if the annotationsCounter is not in the localStorage, return 0
         return { counter: 0 }
     }
     return { counter: 0 }

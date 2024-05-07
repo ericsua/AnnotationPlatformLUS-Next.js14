@@ -3,6 +3,7 @@ import { UseFormRegister } from "react-hook-form";
 import { FormData } from "@/types/FormSchema";
 import { type RegisterName } from "@/types/FormSchema";
 
+// Props for the RadioInput component
 interface RadioInputProps {
     //field: ControllerRenderProps<FormData>;
     value: string;
@@ -12,6 +13,19 @@ interface RadioInputProps {
     isBoolean: boolean;
 }
 
+
+/**
+ * A radio input component.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.value - The value of the radio input.
+ * @param {Function} props.register - The register function from the react-hook-form library.
+ * @param {string} props.registerName - The name to be used when registering the input.
+ * @param {string} props.label - The label text for the radio input.
+ * @param {boolean} props.isBoolean - Indicates whether the value is a boolean.
+ * @returns {JSX.Element} The rendered RadioInput component.
+ */
 export default function RadioInput({
     value,
     register,

@@ -3,6 +3,7 @@ import videoReducer from "./videoState";
 // import darkModeReducer, { DarkModeState, darkModeSliceDynamic } from "./darkMode";
 import { annotationsReducer } from "./annotations";
 
+// Create a store with the reducers
 export const makeStore = () => {
     return configureStore({
         reducer: {

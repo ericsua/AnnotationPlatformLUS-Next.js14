@@ -1,5 +1,12 @@
 import React from "react";
 
+
+/**
+ * A skeleton video player component.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SkeletonVideoPlayer component.
+ */
 export default function SkeletonVideoPlayer() {
     return (
         <div className="w-full border border-solid border-[var(--player-wrapper-border-color)] rounded-[8px] shadow-[var(--player-wrapper-shadow)] mb-6">

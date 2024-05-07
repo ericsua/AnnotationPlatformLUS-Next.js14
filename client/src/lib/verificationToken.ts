@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import { v4 as uuidv4 } from "uuid";
 
+// Helper function to get verification token by email from the database
 export async function getVerificationTokenByEmail(email: string) {
     try {
         const verificationToken = await prisma.verificationTokens.findFirst({
@@ -12,6 +13,7 @@ export async function getVerificationTokenByEmail(email: string) {
     }
 }
 
+// Helper function to get verification token by token (uuidv4) from the database
 export async function getVerificationTokenByToken(token: string) {
     try {
         const verificationToken = await prisma.verificationTokens.findUnique({
@@ -23,10 +25,12 @@ export async function getVerificationTokenByToken(token: string) {
     }
 }
 
+// Helper function to create a new verification token in the database
 export async function createVerificationToken(email: string) {
     const token = uuidv4();
     const expiresAt = new Date(new Date().getTime() + 1000 * 3600); // 1 hour
 
+    // Check if there is an existing token for the email and delete it
     const existingToken = await getVerificationTokenByEmail(email);
 
     if (existingToken) {
@@ -35,6 +39,7 @@ export async function createVerificationToken(email: string) {
         });
     }
 
+    // Create a new verification token in the database
     const verificationToken = await prisma.verificationTokens.create({
         data: {
             email,

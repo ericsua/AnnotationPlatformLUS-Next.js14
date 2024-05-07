@@ -5,6 +5,7 @@ type ButtonAuthProps = {
     label: string;
 };
 
+// Submit button component for the auth forms
 export default function ButtonAuth({ isSubmitting, label }: ButtonAuthProps) {
     return (
         <div className="flex w-full mt-12">

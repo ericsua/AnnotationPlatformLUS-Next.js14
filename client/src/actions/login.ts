@@ -9,7 +9,9 @@ import { DEFAULT_LOGGED_IN_REDIRECT } from "@/routes";
 import { zodUserLoginSchema, zodUserLoginType } from "@/types/Authentication";
 import { AuthError } from "next-auth";
 
+// Server action to login a user
 export async function loginUser(credentials: zodUserLoginType) {
+    // Simulate a delay to prevent brute force attacks and fake the loading state
     await new Promise((resolve) =>
         setTimeout(() => {
             resolve(null);
@@ -17,6 +19,7 @@ export async function loginUser(credentials: zodUserLoginType) {
     );
     // trim the spaces from the email
     credentials.email = credentials.email.trim();
+    // Validate the credentials types using the zod schema to ensure the data is well-formed
     const validateCredentials = zodUserLoginSchema.safeParse(credentials);
     if (!validateCredentials.success) {
         return {
@@ -29,6 +32,7 @@ export async function loginUser(credentials: zodUserLoginType) {
 
     const { email, password } = validateCredentials.data;
 
+    // Check if the user exists in the database
     const existingUser = await getUserByEmail(email);
 
     if (!existingUser || !existingUser.email || !existingUser.password) {
@@ -40,22 +44,36 @@ export async function loginUser(credentials: zodUserLoginType) {
         };
     }
 
+    // Check if the user has verified their email, if not, send a new verification email
     if (!existingUser.emailVerified) {
-        const verificationToken = await createVerificationToken(existingUser.email);
-        const resultEmail =  await sendVerificationEmail(existingUser.email, verificationToken.token);
-        // console.log("resultEmail", resultEmail)
-        return {
-            status: 400,
-            message: "Email not verified, confirmation email sent",
-            error: "Email not verified, confirmation email sent",
-            ok: false,
-        };
+        try {
+            const verificationToken = await createVerificationToken(existingUser.email);
+            await sendVerificationEmail(existingUser.email, verificationToken.token);
+
+            return {
+                status: 400,
+                message: "Email not verified, confirmation email sent",
+                error: "Email not verified, confirmation email sent",
+                ok: false,
+            };
+        } catch (error) {
+            console.error("Error while sending verification email", error);
+            return {
+                status: 500,
+                message: "Internal Server Error while sending verification email",
+                error: "Internal Server Error while sending verification email",
+                ok: false,
+            };
+        }
     }
 
+    // Sign in the user
     try {
         await signIn("credentials", { email, password, redirect: false });
     } catch (error) {
         console.error("Error while signing-in", error);
+
+        // Handle the different types of AuthErrors
         if (error instanceof AuthError) {
             switch (error.type) {
                 case "CredentialsSignin": {
@@ -77,6 +95,7 @@ export async function loginUser(credentials: zodUserLoginType) {
             }
         }
 
+        // If the error is not an AuthError, throw it, it will be handled in the superior scope
         throw error;
     }
 
@@ -88,6 +107,7 @@ export async function loginUser(credentials: zodUserLoginType) {
     };
 }
 
+// Server action to logout a user
 export async function logoutUser() {
     await signOut();
     return {

@@ -7,12 +7,15 @@ import readline from "readline";
 
 import * as glob from 'glob'
 
+// Script to populate the database with videos from the /videos folder
+
 dotenv.config();
 // connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || "error";
 const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 let UPDATE = true;
 
+// function to ask a question in the console and wait for an answer
 function askQuestion(query: string) {
     const rl = readline.createInterface({
         input: process.stdin,
@@ -25,7 +28,7 @@ function askQuestion(query: string) {
     }))
 }
 
-
+// ask if user wants to use remote database
 const ans = await askQuestion("\nRemote database? (yes/no) ");
 
 if (ans !== "yes" && ans !== "y") {
@@ -33,6 +36,7 @@ if (ans !== "yes" && ans !== "y") {
 }
 const USE_REMOTE = ans === "yes" || ans === "y";
 
+// ask if user wants to update existing videos (in case a video was already in the db and one wants to update its information)
 const ans2 = await askQuestion("Do you want to update existing videos? (yes/no) ");
 
 if (ans2 === "no" || ans2 === "n") {

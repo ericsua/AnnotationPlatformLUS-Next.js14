@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-// create schema
+// Schema for videos
 const videoSchema = new Schema({
     title: String,
     description: String,

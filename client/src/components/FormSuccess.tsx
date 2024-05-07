@@ -1,5 +1,6 @@
 import React from "react";
 
+// Success message component to display success message in forms as an alert inside the form
 export default function FormSuccess({ message }: { message?: string }) {
     if (!message) return null;
     return (

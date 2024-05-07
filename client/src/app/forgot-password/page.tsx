@@ -11,7 +11,9 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { SyncLoader } from "react-spinners";
 
+// Page to reset the password
 export default function ForgotPassword() {
+    // Form for the reset password process
     const {
         register,
         handleSubmit,
@@ -22,12 +24,15 @@ export default function ForgotPassword() {
     const [success, setSuccess] = useState<string | undefined>();
     const [error, setError] = useState<string | undefined>();
 
+    // Submit the form to reset the password
     const onSubmit = async (data: zodUserResetType) => {
         // console.log(data);
 
+        // Hide the success and error messages
         setSuccess(undefined);
         setError(undefined);
 
+        // Send the data to the server (no await here, the toaster and later the setSuccess/setError will handle the response)
         const resPromise = forgotPassword(data);
 
         toast.promise(
@@ -35,6 +40,7 @@ export default function ForgotPassword() {
             {
                 loading: "Sending data...",
                 success: (data) => {
+                    // function to run when the promise resolves, as a custom way to check if everything went well
                     if (!data.ok) throw new Error(data.error);
                     return "Success!";
                 },
@@ -44,6 +50,7 @@ export default function ForgotPassword() {
         );
 
         const res = await resPromise;
+        // Show the success or error messages from the server, if needed 
         setSuccess(res?.success);
         setError(res?.error);
         if (res.error) {

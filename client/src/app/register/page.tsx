@@ -15,10 +15,11 @@ import TitleFormAuth from "@/components/TitleFormAuth";
 import FormWrapperAuth from "@/components/FormWrapperAuth";
 import FormSuccess from "@/components/FormSuccess";
 import FormError from "@/components/FormError";
-import { set } from "lodash";
 import { registerUser } from "@/actions/register";
 
+// Page to register a new user
 export default function RegisterPage() {
+    // Form for the registration process
     const {
         register,
         handleSubmit,
@@ -32,32 +33,47 @@ export default function RegisterPage() {
     const [errorForm, setErrorForm] = useState<string | undefined>("");
     const [successForm, setSuccessForm] = useState<string | undefined>("");
 
+    // Submit the form to register a new user
     async function onSubmit(data: zodUserRegisterType) {
+        // Artificial delay for security reasons and to show the loading spinner
         await new Promise((resolve) =>
             setTimeout(resolve, Math.random() * 1000 * 2)
         );
         // console.log("registration to send", data);
 
+        // Reset the success and error messages
         setErrorForm("");
         setSuccessForm("");
 
+        // Send the data to the server (no await here, the toaster and later the setSuccess/setError will handle the response)
         const resPromise = registerUser(data)
 
         toast.promise(resPromise, {
             loading: "Sending data...",
-            success: (data) => {if (!data.ok) throw new Error("Registration failed"); return "Registered successfully";},
+            success: (data) => {
+                // function to run when the promise resolves, as a custom way to check if everything went well
+                if (!data.ok)
+                    throw new Error("Registration failed"); 
+                return "Registered successfully";
+            },
             error: "Registration failed",
         }, {position: "top-center"});
+
+        // Wait for the response to finish
         const res = await resPromise;
         // console.log("res", res);
+        // Set the success and error messages from the server, if any
         setErrorForm(res.error);
         setSuccessForm(res.success);
+
+        // If there are errors (Zod valudation or server errors), set them in the form fields
         if (!res.ok) {
             try {
                 const errors: any = res.errors;
                 if (!errors) return;
                 // console.log("register error", res);
                 const errorsKeys = Object.keys(errors);
+                // Set Zod validation errors in the form fields
                 errorsKeys.forEach((key) => {
                     // console.error(
                     //     key as keyof zodUserRegisterType,
@@ -75,6 +91,7 @@ export default function RegisterPage() {
 
             return;
         }
+        // Reset the form
         reset();
         // console.log("register response", res);
 

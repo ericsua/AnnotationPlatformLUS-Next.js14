@@ -1,5 +1,7 @@
 import chalk from "chalk";
 
+// Helper functions to log messages to the console in a colorful and readable way
+
 export const info = (message: string) => {
     const timestamp = new Date().toISOString();
     console.log(chalk.green(`${timestamp} - [INFO] [server]: ${message}`));

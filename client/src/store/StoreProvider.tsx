@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { Provider } from "react-redux";
 import { AppStore, makeStore, RootState } from "@/store/store";
 
+// Create a store provider to wrap the app with the store
 export default function StoreProvider({
     children,
 }: {

@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import { v4 as uuidv4 } from "uuid";
 
+// Helper function to retrieve a password reset token by token (uuidv4) from the database
 export async function getPasswordResetTokenByToken(token: string) {
     try {
         const passwordResetToken = await prisma.resetPasswordTokens.findUnique({
@@ -15,7 +16,7 @@ export async function getPasswordResetTokenByToken(token: string) {
     }
 }
 
-
+// Helper function to retrieve a password reset token by email from the database
 export async function getPasswordResetTokenByEmail(email: string) {
     try {
         const passwordResetToken = await prisma.resetPasswordTokens.findFirst({

@@ -4,9 +4,11 @@ import Video from "./models/video";
 import Annotation from "./models/annotation";
 import readline from "readline";
 
+// Script to reset the database
+
 dotenv.config();
 
-// ask for confirmation before resetting the database
+// function to ask a question in the console and wait for an answer
 function askQuestion(query: string) {
     const rl = readline.createInterface({
         input: process.stdin,
@@ -21,6 +23,7 @@ function askQuestion(query: string) {
     );
 }
 
+// ask if user wants to reset the database
 const ans = await askQuestion(
     "\nAre you sure you want to reset the database? (yes/no) "
 );
@@ -30,12 +33,14 @@ if (ans !== "yes" && ans !== "y") {
     process.exit(0);
 }
 
+// ask if user wants to use remote database
 const ansDB = await askQuestion("Remote database? (yes/no) ");
 
 const USE_REMOTE = ansDB === "yes" || ansDB === "y";
 
 let DELETE_ANNOTATIONS = false;
 
+// ask if user wants to delete also all annotations
 const ansAnnots = await askQuestion(
     "Do you want to delete all annotations? (yes/no) "
 );
@@ -46,6 +51,7 @@ if (ansAnnots === "yes" || ansAnnots === "y") {
 
 let DELETE_USERS = false;
 
+// ask if user wants to delete all users
 const ansUsers = await askQuestion(
     "Do you want to delete all users? (yes/no) "
 );
@@ -56,6 +62,7 @@ if (ansUsers === "yes" || ansUsers === "y") {
 
 let DELETE_VIDEOS = false;
 
+// ask if user wants to delete all videos from the database, not the files
 const ansVideos = await askQuestion(
     "Do you want to delete all videos? (yes/no) "
 );

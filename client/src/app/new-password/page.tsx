@@ -12,11 +12,14 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { SyncLoader } from "react-spinners";
 
+// Page to reset the password
 export default function NewPasswordPage() {
+    // Get the token and email from the URL, since they were set in the reset password email
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
 
+    // Form for the reset password process
     const {
         register,
         handleSubmit,
@@ -29,12 +32,15 @@ export default function NewPasswordPage() {
     const [success, setSuccessForm] = useState<string | undefined>();
     const [error, setErrorForm] = useState<string | undefined>();
 
+    // Submit the form to reset the password
     const onSubmit = async (data: zodUserNewPasswordType) => {
         // console.log(data);
 
+        // Reset the success and error messages
         setSuccessForm(undefined);
         setErrorForm(undefined);
 
+        // Send the data to the server (no await here, the toaster and later the setSuccess/setError will handle the response)
         const resPromise = newPassword(data, token)
 
         toast.promise(
@@ -42,6 +48,7 @@ export default function NewPasswordPage() {
             {
                 loading: "Sending data...",
                 success: (data) => {
+                    // function to run when the promise resolves, as a custom way to check if everything went well
                     if (!data.ok) throw new Error(data.error);
                     return "Success!";
                 },
@@ -51,9 +58,11 @@ export default function NewPasswordPage() {
         );
 
         const res = await resPromise;
+        // Show the success or error messages from the server, if needed
         setSuccessForm(res?.success);
         setErrorForm(res?.error);
 
+        // Show the server errors related to Zod validation on the form
         if (res?.errors) {
             const errors: any = res.errors;
             Object.keys(errors).forEach((key) => {
@@ -63,6 +72,7 @@ export default function NewPasswordPage() {
                 });
             });
         }
+        // Reset the form
         reset()
     };
 
@@ -102,6 +112,7 @@ export default function NewPasswordPage() {
                             />
                             <FormSuccess message={success} />
                             <FormError message={error} />
+                            {/* Show a loading spinner while the form is submitting */}
                             {isSubmitting && (
                                 <div className="mx-auto w-fit mt-8">
                                     <SyncLoader color="gray" loading={true} />

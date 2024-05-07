@@ -3,6 +3,7 @@ import { logoutUser } from "@/actions/login";
 import { useSession } from "next-auth/react";
 import React from "react";
 
+// Component for the logout button, only shown when the user is authenticated
 const LogoutButton = () => {
     const session = useSession();
     if (session.status === "authenticated") {

@@ -3,9 +3,10 @@ import Link from "next/link";
 import React from "react";
 import LogoutButton from "./LogoutButton";
 const ButtonDarkMode = dynamic(() => import("@/components/ButtonDarkMode"), {
-    ssr: false,
+    ssr: false, // prevent server-side render of the dark mode button since it relies client-side state
 });
 
+// Navbar component, shown at the top of the page
 export default function Navbar() {
     return (
         <nav className="py-3 flex justify-center items-center  bg-[--root-bg]">

@@ -3,6 +3,7 @@ import { FieldErrors, UseFormRegister, UseFormUnregister } from "react-hook-form
 import { get } from "lodash";
 import { FormData, type RegisterName } from "@/types/FormSchema";
 
+// Props for the NumberInput component
 interface NumberInputProps {
     //field: ControllerRenderProps<FormData>;
     register: UseFormRegister<FormData>;
@@ -17,6 +18,8 @@ interface NumberInputProps {
     placeholder: string;
 }
 
+// Component for a number input field in a form (e.g. for height or width of the pleural line)
+// currently not used in the project, but can be used in the future
 export default function NumberInput({
     register,
     unregister,
@@ -29,6 +32,8 @@ export default function NumberInput({
     step,
     placeholder,
 }: NumberInputProps) {
+
+    // Unregister the input field when the component is unmounted (probably not needed?)
     useEffect(() => {
         return () => {
             unregister(registerName);
@@ -60,6 +65,7 @@ export default function NumberInput({
                     </div>
                     
                 </div>
+                {/* lodash function to get the error message for the input field using a string as index of an object (e.g. pleuralEffusion.specifics.isSeptaPresent) */}
                 {get(errors, registerName) && (
                         <span className="spanError">
                             {get(errors, registerName)?.message}

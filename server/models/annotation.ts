@@ -1,17 +1,24 @@
 import mongoose from "mongoose";
 import { z } from "zod";
 
+// Schema for the annotations of the videos in the database
 const Schema = mongoose.Schema;
 
 const requiredErrorMessage = {invalid_type_error: "Please select an option"};
 
+// Form schema for the annotation form with Zod validation
+// This schema is very similar to the one in the client, but with some differences since it doesn't need to transform UI data like the client does
+// Should be kept in sync with the client schema to avoid bugs, so any changes to the schema in the client should be reflected here
 export const FormSchema = z.object({
     pleuralLine: z.object({
         depthInCentimeters: z.number({errorMap: () => ({message: "The number must be between 0 and 1 and have at most one decimal"})}).min(0).max(1).step(0.1).nullable().default(null),
         isRegular: z.boolean(requiredErrorMessage),
         specificsIrregular: z.object({
             isContinuous: z.boolean(requiredErrorMessage).nullable(),
+        // in general, the specifics are nullable and default to null, since they are only required if the parent field is set to a certain value
         }).nullable().default(null),
+    // Refine is used to add custom validation logic to the schema, in this case, it checks if the specifics are filled if the pleural line is irregular
+    // as a way to ensure that the user doesn't forget to fill the specifics when some fields are set to a certain value
     }).refine((data) => { return data.isRegular === false ? data.specificsIrregular?.isContinuous !== null : true }, { message: "If the pleural line is irregular, the specifics must be filled", path: ["specificsIrregular.isContinuous"]}),
     axisScan: z.enum(["longitudinal", "horizontal"], requiredErrorMessage),
     isPleuralSlidingPresent: z.boolean(requiredErrorMessage),
@@ -77,16 +84,20 @@ export const FormSchema = z.object({
     confidence: z.enum(["low", "medium", "high"], requiredErrorMessage),
 });
 
+// Infer the type of the form data from the schema
 export type FormData = z.infer<typeof FormSchema>;
 
+// Type for the annotation data, including the video ID and the date
 export type AnnotationData ={videoId: string, date: Date, annotations: FormData};
 
+// Mongoose schema for the annotations
 const annotationSchema = new Schema({
     videoId: { type: Schema.Types.ObjectId, ref: "Videos", required: true },
     date: { type: Date, default: Date.now },
     userId: { type: Schema.Types.ObjectId, ref: "Users", required: true },
     annotations: {
         pleuralLine: {
+            // Not used for now
             depthInCentimeters: {
                 type: Number,
                 required: false,
@@ -98,6 +109,7 @@ const annotationSchema = new Schema({
             specificsIrregular: {
                     isContinuous: {
                         type: Boolean,
+                        // Required if the pleural line is irregular, "this" refers to the global object of the schema
                         required: function (this: AnnotationData) {
                             return this.annotations.pleuralLine.isRegular === false;
                         },
@@ -205,6 +217,7 @@ const annotationSchema = new Schema({
                             specifics: {
                                     isStatic: {
                                         type: Boolean,
+                                        // In nested required fields, multiple conditions have to be checked
                                         required: function (this: AnnotationData) {
                                             return (
                                                 this.annotations.subpleuralSpace

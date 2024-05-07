@@ -35,7 +35,10 @@ export default function Form() {
         getValues,
         setError,
         reset,
+    // the Form has type FormData inferred from a Zod schema
     } = useForm<FormData>({
+        // custom resolver with Zod schemam, meaning that the form fields are validated with the Zod schema instead of 
+        // the react-hook-form validation
         resolver: zodResolver(FormSchema),
     }); // { shouldFocusError: false }
     // console.log(
@@ -47,6 +50,8 @@ export default function Form() {
     //     getValues("pleuralLine.depthInCentimeters") === undefined
     // );
     // console.log(getValues("subpleuralSpace.macroConsolidations.isPresent"));
+
+    // select the video ID from the Redux store
     const videoID = useSelector((state: RootState) => state.videoState.id);
     const videoStatus = useSelector(
         (state: RootState) => state.videoState.status
@@ -55,7 +60,8 @@ export default function Form() {
         (state: RootState) => state.videoState.error
     );
     const dispatch = useDispatch<AppDispatch>();
-
+    
+    // watch the values of the form fields
     const isRegularWatch = watch(`pleuralLine.isRegular`);
     const isHorizontalArtifactsPresentWatch = watch(
         `horizontalArtifacts.isPresent`
@@ -78,6 +84,7 @@ export default function Form() {
     const isPleuralEffusionPresentWatch = watch(`pleuralEffusion.isPresent`);
 
     useEffect(() => {
+        // depending on the video status (during download from server), show a toast message
         if (videoStatus === "pending") {
             // console.log("Pending: Loading the video...");
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -107,15 +114,19 @@ export default function Form() {
         }
     }, [videoStatus]);
 
+    // when the user submits the form
     const onSubmit = async (data: FormData) => {
         // console.log("data to POST", data);
         // @ts-ignore
         // data.verticalArtifacts.isPresent = 3;
         // window.alert("data to POST: " + JSON.stringify(data));
+        
+        // show a spinner while the form is being submitted
         const pSpinner = document.getElementById("p-spinner");
         if (pSpinner) {
             pSpinner.innerText = "Uploading annotation...";
         }
+        // server action to post the form data (no await here, because we use react-hot-toast to show the status of the form submission)
         const postPromise = postVideoAction(data, videoID);
         toast.promise(
             //fetch(serverUrlBase + "/api/v1/video/" + videoID, {
@@ -127,6 +138,11 @@ export default function Form() {
                     "An error occurred while submitting the form"
             }
         );
+        // also during the submission, perform the following actions
+        // 1. reset the videoID and videoFilename in the Redux store
+        // 2. get id and filename of the next video and update the Redux store
+        // 3. increment the counter of annotations submitted by the user (local storage only)
+
         try {
             const { status } = await postPromise;
             if (status && status === 201) {
@@ -142,13 +158,17 @@ export default function Form() {
         } catch (error) {
             // console.log("error catched", error);
             try {
+                // try to parse the error message as JSON (which is an expected error from the server with status 455 of Zod validation error)
                 const errorObj = JSON.parse((error as Error).message);
                 const status = errorObj.status;
                 const jsonData = errorObj.jsonData;
                 // console.log("error zod data", jsonData);
+                
+                // if the error is a Zod validation error (status 455), show the error messages in the form
                 if (status && status === 455 && jsonData) {
                     // console.log("zod validation error");
                     const zodMessage = jsonData.message;
+                    // list of errors from Zod validation, one for each wrong field in the form 
                     const zodErrors = jsonData.errors;
                     // console.log("zodMessage", zodMessage);
                     // console.log("zodErrors", zodErrors);
@@ -160,19 +180,24 @@ export default function Form() {
                     //         message: zodErrors[key],
                     //     }, { shouldFocus: true });
                     // });
+
+                    // for each not valid field, set the error message in the form
                     for (let key of zodErrorsKeys) {
                         setError(
                             key as RegisterName,
                             {
+                                // error type "server" is a custom type to show the error message in the form
                                 type: "server",
                                 message: zodErrors[key],
                             },
+                            // to make the browser focus on the first error field (doesn't work atm)
                             { shouldFocus: true }
                         );
                     }
                 }
             } catch (e) {
                 // console.log("not a 455 (Zod) error", e);
+                // unknown error
             }
         }
         //reset();
@@ -180,10 +205,12 @@ export default function Form() {
 
     return (
         <>
+            {/* // full page blur while submitting/getting new video, to avoid unwanted multiple actions (e.g. click other things) */}
             <div
                 id="blocker"
                 className="fixed left-0 top-0 w-screen h-screen backdrop-blur z-50 hidden"
             >
+                {/* // spinner while loading the next video */}
                 <div className="flex flex-col justify-center items-center h-full">
                     {/* <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div> */}
                     <svg
@@ -208,8 +235,10 @@ export default function Form() {
                     </p> */}
                 </div>
             </div>
+
+            {/* // form with all the fields */}
             <form onSubmit={handleSubmit(onSubmit)} className="form">
-                {/* // pleural line depth in centimeters component
+                {/* // pleural line depth in centimeters component, to be used in the future 
                 <NumberInput
                     register={register}
                     unregister={unregister}
@@ -233,10 +262,16 @@ export default function Form() {
                     optionsLabels={["Regular (smooth)", "Irregular (coarse)"]}
                     isBoolean={true}
                 />
+
+                {/* AnimatePresence is used as a container to animate the dis/appearance of the next field, since it is hidden (not present 
+                    in the tree) based on the value of the previous field (pleuralLine.isRegular). The field is shown only if 
+                    the value of the previous field is "false" */}
                 <AnimatePresence key="pleuralLineSpecifics">
                     {
                         // @ts-ignore
                         (isRegularWatch as string) === "false" && (
+                            // AnimateSlide is a custom component to animate the appearance of the field so that it slides down from the top
+                            // when it appears and slides up when it disappears
                             <AnimateSlide>
                                 <RadioBox
                                     register={register}

@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
+// Script to test connection to local MongoDB
+
 dotenv.config({ path: "./.env.mongo" });
 
 const DB_USER = process.env.MONGODB_USERNAME;

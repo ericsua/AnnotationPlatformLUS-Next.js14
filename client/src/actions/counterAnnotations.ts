@@ -1,6 +1,7 @@
 "use server";
 import { prisma } from "@/prisma";
 
+// Server action to count the number of annotations of a user
 export default async function counterAnnotations(email: string) {
 
     try {

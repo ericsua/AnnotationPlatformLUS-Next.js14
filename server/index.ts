@@ -17,6 +17,7 @@ dotenv.config();
 const MONGO_URI = process.env.MONGO_URI || "error";
 const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 const db = mongoose.connection;
+// Mongoose connection events
 db.on("error", () => {
     logger.error("Error connecting to MongoDB 📕");
 });
@@ -33,7 +34,9 @@ db.on("reconnected", function () {
     logger.info("Reconnected to MongoDB 📗");
 });
 
+// Connect to MongoDB
 try {
+    // decide to which database to connect (local or remote mongoDB)
     await connect(MONGO_URI);
     //await connect(MONGO_URI_LOCAL);
 } catch (err) {
@@ -47,13 +50,17 @@ const app: Express = express();
 const port = process.env.PORT || 3000;
 
 // SOCKET.IO
-
+// allow cors only for the frontend
 app.use(cors( { origin: "http://localhost:5174" } ));
 
 app.use(express.json());
 
+// create http server for socket.io
 const httpServer = createServer(app);
+// allow cors for everyone for the socket.io server
 const io = new Server(httpServer, { cors: { origin: "*" }, path: "/socketIO" });
+
+// when a user connects, send the current progress of the progress bar with socket.io
 io.on("connection", async (socket) => {
     const {annotatedVideos, totalVideos} = await getNumberAnnotatedVideos();
     socket.emit("progressBarUpdate", {annotatedVideos, totalVideos});
@@ -63,6 +70,7 @@ io.on("connection", async (socket) => {
     });
 });
 
+// timeouts array to store all timeouts (users' video reservations) and clear them when the application stops if they didn't finish naturally
 export const timeouts: { a: NodeJS.Timeout; b: () => void; id: string }[] = [];
 
 
@@ -77,6 +85,7 @@ app.get("/api", (req: Request, res: Response) => {
 initSocket(io);
 app.use("/api/v1/video", videoRouter);
 
+// Serve static files (shouldn't be needed since Next.js will handle this, but just in case)
 app.use(express.static("public"));
 
 // app.listen(port, () => {
@@ -93,7 +102,7 @@ httpServer.listen(port, () => {
 });
 
 
-// Close the connection when the application stops
+// Close the connection when the application stops (keyboard interrupt events)
 ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
     process.on(signal, async () => {
         console.log(
