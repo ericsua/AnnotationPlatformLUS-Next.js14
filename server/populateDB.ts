@@ -7,6 +7,8 @@ import readline from "readline";
 
 import * as glob from 'glob'
 
+import { asyncExitHook } from "exit-hook";
+
 // Script to populate the database with videos from the /videos folder
 
 dotenv.config();
@@ -44,6 +46,16 @@ if (ans2 === "no" || ans2 === "n") {
     UPDATE = false;
 }
 
+// ask if user wants to reset the database
+const ans3 = await askQuestion(
+    "\nAre you sure you want to update the " + (USE_REMOTE ? "REMOTE" : "LOCAL") + " database? (yes/no) "
+);
+
+if (ans3 !== "yes" && ans3 !== "y") {
+    console.log("Exiting...");
+    process.exit(0);
+}
+
 // Check if connection is successful
 const db = mongoose.connection;
 
@@ -53,12 +65,19 @@ db.once("open", function () {
 });
 
 try {
-    await connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL);
+    if (USE_REMOTE) {
+        console.log("Connecting to REMOTE MongoDB");
+        await connect(MONGO_URI);
+    }
+    else {
+        console.log("Connecting to LOCAL MongoDB");
+        await connect(MONGO_URI_LOCAL);
+    }
 } catch (err) {
     console.log("Error connecting to MongoDB: ", err);
 }
 
-console.log(MONGO_URI_LOCAL);
+// console.log(MONGO_URI_LOCAL);
 
 // print available collections
 const collections = await mongoose.connection.db.listCollections().toArray();
@@ -117,12 +136,17 @@ for (const [index, file] of videoFiles.entries()) {
 }
 
 // Close the connection when the application stops
-['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal => process.on(signal, async () => {
-    await mongoose.connection.close(true);
-    
-    console.log('\nMongoose connection closed through app termination 📕');
-    process.exit(0);
-}));
+asyncExitHook(async (signal) => {
+    // signals start from 128 (Node): 129 = SIGHUP, 130 = SIGINT, 133 = SIGQUIT, 143 = SIGTERM
+    if (signal === 129 || signal === 130 || signal === 131 || signal === 143) {
+        console.log(
+            `\nReceived ${signal} signal, gracefully cleaning up before terminating... 📕`
+        );
+
+        await mongoose.connection.close(true);
+        console.log("Mongoose connection closed through app termination 📕");
+    }
+}, {wait: 5000});
 
 
 // close connection

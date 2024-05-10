@@ -4,7 +4,10 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  // change this if you want to change the database used (remote or local) and
+  // generate the new Prisma Client with 
+  // 'npx prisma generate' and 'npx prisma db push'
+  url      = env("DATABASE_URL") // remote: DATABASE_URL, local: DATABASE_URL_LOCAL
 }
 
 model users {

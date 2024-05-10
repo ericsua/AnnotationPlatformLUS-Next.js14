@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -60,28 +60,31 @@ export default function Form() {
         (state: RootState) => state.videoState.error
     );
     const dispatch = useDispatch<AppDispatch>();
+
+    const [disableSubmit, setDisableSubmit] = useState(false);
     
     // watch the values of the form fields
-    const isRegularWatch = watch(`pleuralLine.isRegular`);
+    const isQualitySufficientWatch = watch(`isQualitySufficient`);
+    const isRegularWatch = watch(`data.pleuralLine.isRegular`);
     const isHorizontalArtifactsPresentWatch = watch(
-        `horizontalArtifacts.isPresent`
+        `data.horizontalArtifacts.isPresent`
     );
     const isVerticalArtifactsPresentWatch = watch(
-        `verticalArtifacts.isPresent`
+        `data.verticalArtifacts.isPresent`
     );
     const isMicroConsolidationsPresentWatch = watch(
-        `subpleuralSpace.microConsolidations.isPresent`
+        `data.subpleuralSpace.microConsolidations.isPresent`
     );
     const isMacroConsolidationsPresentWatch = watch(
-        `subpleuralSpace.macroConsolidations.isPresent`
+        `data.subpleuralSpace.macroConsolidations.isPresent`
     );
     const isAirBronchogramPresentWatch = watch(
-        `subpleuralSpace.macroConsolidations.specifics.airBronchogram.isPresent`
+        `data.subpleuralSpace.macroConsolidations.specifics.airBronchogram.isPresent`
     );
     const isDopplerAvailableWatch = watch(
-        `subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable`
+        `data.subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable`
     );
-    const isPleuralEffusionPresentWatch = watch(`pleuralEffusion.isPresent`);
+    const isPleuralEffusionPresentWatch = watch(`data.pleuralEffusion.isPresent`);
 
     useEffect(() => {
         // depending on the video status (during download from server), show a toast message
@@ -90,7 +93,9 @@ export default function Form() {
             window.scrollTo({ top: 0, behavior: "smooth" });
             document.body.classList.add("overflow-hidden");
             document.getElementById("blocker")?.classList.remove("hidden");
+            // Sets the video status to "idle" in the Redux store
             dispatch(resetVideoStatus());
+            setDisableSubmit(true);
         } else if (videoStatus === "fulfilled") {
             // console.log("Fulfilled: Video loaded successfully!");
             document.body.classList.remove("overflow-hidden");
@@ -98,7 +103,10 @@ export default function Form() {
             toast.success("Video loaded successfully!", {
                 position: "top-center",
             });
+            // Sets the video status to "idle" in the Redux store
             dispatch(resetVideoStatus());
+            setDisableSubmit(false);
+
         } else if (videoStatus === "rejected") {
             // console.log("Rejected: An error occurred while loading the video.");
             document.body.classList.remove("overflow-hidden");
@@ -110,7 +118,9 @@ export default function Form() {
                     position: "top-center",
                 }
             );
+            // Sets the video status to "idle" in the Redux store
             dispatch(resetVideoStatus());
+            setDisableSubmit(true);
         }
     }, [videoStatus]);
 
@@ -151,6 +161,7 @@ export default function Form() {
                 dispatch(setVideoFilename(""));
                 dispatch(getNewVideo());
                 dispatch(incrementAnnotationsCounter());
+                setDisableSubmit(false);
                 reset();
             }
             // console.log("status", status);
@@ -196,7 +207,7 @@ export default function Form() {
                     }
                 }
             } catch (e) {
-                // console.log("not a 455 (Zod) error", e);
+                console.log("not a 455 (Zod) error", e);
                 // unknown error
             }
         }
@@ -255,411 +266,432 @@ export default function Form() {
                 <RadioBox
                     register={register}
                     unregister={unregister}
-                    registerName={"pleuralLine.isRegular"}
+                    registerName={"isQualitySufficient"}
                     errors={errors}
-                    label="Is the pleural line regular or irregular?"
+                    label="Is the quality of the video sufficient such that it can be annotated? (Don't overuse this option, only if you are sure that the video is not suitable for annotation, and if so, please provide a reason in the free text field below.)"
                     options={[true, false]}
-                    optionsLabels={["Regular (smooth)", "Irregular (coarse)"]}
+                    optionsLabels={["Yes", "No"]}
                     isBoolean={true}
                 />
 
-                {/* AnimatePresence is used as a container to animate the dis/appearance of the next field, since it is hidden (not present 
-                    in the tree) based on the value of the previous field (pleuralLine.isRegular). The field is shown only if 
-                    the value of the previous field is "false" */}
-                <AnimatePresence key="pleuralLineSpecifics">
+                <AnimatePresence key="qualityNotSufficient">
                     {
                         // @ts-ignore
-                        (isRegularWatch as string) === "false" && (
-                            // AnimateSlide is a custom component to animate the appearance of the field so that it slides down from the top
-                            // when it appears and slides up when it disappears
+                        (isQualitySufficientWatch as string) === "true" && (
                             <AnimateSlide>
                                 <RadioBox
                                     register={register}
                                     unregister={unregister}
-                                    registerName={
-                                        "pleuralLine.specificsIrregular.isContinuous"
-                                    }
+                                    registerName={"data.pleuralLine.isRegular"}
                                     errors={errors}
-                                    label="Given that the pleural line is irregular, is it continuous or broken?"
+                                    label="Is the pleural line regular or irregular?"
                                     options={[true, false]}
+                                    optionsLabels={["Regular (smooth)", "Irregular (coarse)"]}
+                                    isBoolean={true}
+                                />
+
+                                {/* AnimatePresence is used as a container to animate the dis/appearance of the next field, since it is hidden (not present 
+                                    in the tree) based on the value of the previous field (pleuralLine.isRegular). The field is shown only if 
+                                    the value of the previous field is "false" */}
+                                <AnimatePresence key="pleuralLineSpecifics">
+                                    {
+                                        // @ts-ignore
+                                        (isRegularWatch as string) === "false" && (
+                                            // AnimateSlide is a custom component to animate the appearance of the field so that it slides down from the top
+                                            // when it appears and slides up when it disappears
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.pleuralLine.specificsIrregular.isContinuous"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that the pleural line is irregular, is it continuous or broken?"
+                                                    options={[true, false]}
+                                                    optionsLabels={[
+                                                        "Continuous",
+                                                        "Broken (with or without consolidations)",
+                                                    ]}
+                                                    isBoolean={true}
+                                                    nesting={1}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+                                </AnimatePresence>
+
+                                <RadioBox
+                                    register={register}
+                                    unregister={unregister}
+                                    registerName={"data.axisScan"}
+                                    errors={errors}
+                                    label="The axis of the scan is:"
+                                    options={["longitudinal", "horizontal"]}
                                     optionsLabels={[
-                                        "Continuous",
-                                        "Broken (with or without consolidations)",
+                                        "Longitudinal, with the ribs",
+                                        "Horizontal, without the ribs",
                                     ]}
-                                    isBoolean={true}
-                                    nesting={1}
+                                    isBoolean={false}
                                 />
-                            </AnimateSlide>
-                        )
-                    }
-                </AnimatePresence>
 
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={"axisScan"}
-                    errors={errors}
-                    label="The axis of the scan is:"
-                    options={["longitudinal", "horizontal"]}
-                    optionsLabels={[
-                        "Longitudinal, with the ribs",
-                        "Horizontal, without the ribs",
-                    ]}
-                    isBoolean={false}
-                />
-
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={"isPleuralSlidingPresent"}
-                    errors={errors}
-                    label="Is the pleural sliding present?"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                />
-
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={"horizontalArtifacts.isPresent"}
-                    errors={errors}
-                    label="Are horizontal artifacts present?"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                />
-                <AnimatePresence key="horizontalArtifactsSpecifics">
-                    {
-                        // @ts-ignore
-                        (isHorizontalArtifactsPresentWatch as string) ===
-                            "true" && (
-                            <AnimateSlide>
                                 <RadioBox
                                     register={register}
                                     unregister={unregister}
-                                    registerName={
-                                        "horizontalArtifacts.specifics.coverageAboveOrEqual50"
-                                    }
+                                    registerName={"data.isPleuralSlidingPresent"}
                                     errors={errors}
-                                    label="Given that horizontal artifacts are present, is their coverage (laterally) above 50% of the visible pleural line?"
-                                    options={[true, false]}
-                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
-                                    isBoolean={true}
-                                    nesting={1}
-                                />
-                            </AnimateSlide>
-                        )
-                    }
-                </AnimatePresence>
-
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={"verticalArtifacts.isPresent"}
-                    errors={errors}
-                    label="Are vertical artifacts present?"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                />
-
-                <AnimatePresence key="verticalArtifactsSpecifics">
-                    {
-                        // @ts-ignore
-                        (isVerticalArtifactsPresentWatch as string) ===
-                            "true" && (
-                            <AnimateSlide>
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "verticalArtifacts.specifics.coverageAboveOrEqual50"
-                                    }
-                                    errors={errors}
-                                    label="Given that vertical artifacts are present, is their coverage (laterally) above 50% of the visible pleural line?"
-                                    options={[true, false]}
-                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
-                                    isBoolean={true}
-                                    nesting={1}
-                                />
-                            </AnimateSlide>
-                        )
-                    }
-                </AnimatePresence>
-
-                <label className="lblRadio !text-2xl mt-12 !mb-4">
-                    About the subpleural space:
-                </label>
-
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={
-                        "subpleuralSpace.microConsolidations.isPresent"
-                    }
-                    errors={errors}
-                    label="Are micro-consolidations present? (hypo-echoic nodules smaller in diameter than 5 mm)"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                    nesting={2}
-                />
-
-                <AnimatePresence key="microConsolidationsSpecifics">
-                    {
-                        // @ts-ignore
-                        (isMicroConsolidationsPresentWatch as string) ===
-                            "true" && (
-                            <AnimateSlide>
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "subpleuralSpace.microConsolidations.specifics.isSingle"
-                                    }
-                                    errors={errors}
-                                    label="Given that micro-consolidations are present, is there a single consolidation or multiple consolidations?"
-                                    options={[true, false]}
-                                    optionsLabels={["Single", "Multiple"]}
-                                    isBoolean={true}
-                                    nesting={3}
-                                />
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "subpleuralSpace.microConsolidations.specifics.coverageAboveOrEqual50"
-                                    }
-                                    errors={errors}
-                                    label="Given that micro-consolidations are present, is their coverage (laterally) above 50% of the visible pleural line?"
-                                    options={[true, false]}
-                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
-                                    isBoolean={true}
-                                    nesting={3}
-                                />
-                            </AnimateSlide>
-                        )
-                    }
-                </AnimatePresence>
-
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={
-                        "subpleuralSpace.macroConsolidations.isPresent"
-                    }
-                    errors={errors}
-                    label="Are macro-consolidations present? (hypo-echoic nodules larger in diameter than 5 mm)"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                    nesting={2}
-                />
-
-                <AnimatePresence key="macroConsolidationsSpecifics">
-                    {
-                        // @ts-ignore
-                        (isMacroConsolidationsPresentWatch as string) ===
-                            "true" && (
-                            <AnimateSlide>
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "subpleuralSpace.macroConsolidations.specifics.isSingle"
-                                    }
-                                    errors={errors}
-                                    label="Given that macro-consolidations are present, is there a single consolidation or multiple consolidations?"
-                                    options={[true, false]}
-                                    optionsLabels={["Single", "Multiple"]}
-                                    isBoolean={true}
-                                    nesting={3}
-                                />
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "subpleuralSpace.macroConsolidations.specifics.coverageAboveOrEqual50"
-                                    }
-                                    errors={errors}
-                                    label="Given that macro-consolidations are present, is their coverage (laterally) above 50% of the visible pleural line?"
-                                    options={[true, false]}
-                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
-                                    isBoolean={true}
-                                    nesting={3}
-                                />
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "subpleuralSpace.macroConsolidations.specifics.airBronchogram.isPresent"
-                                    }
-                                    errors={errors}
-                                    label="Is the air bronchogram present?"
+                                    label="Is the pleural sliding present?"
                                     options={[true, false]}
                                     optionsLabels={["Yes", "No"]}
                                     isBoolean={true}
-                                    nesting={3}
                                 />
-                            </AnimateSlide>
-                        )
-                    }
 
-                    <AnimatePresence key="airBronchogramSpecifics">
-                        {
-                            // @ts-ignore
-                            (isMacroConsolidationsPresentWatch as string) ===
-                                "true" &&
-                                // @ts-ignore
-                                (isAirBronchogramPresentWatch as string) ===
-                                    "true" && (
-                                    <AnimateSlide>
-                                        <RadioBox
-                                            register={register}
-                                            unregister={unregister}
-                                            registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.airBronchogram.specifics.isStatic"
-                                            }
-                                            errors={errors}
-                                            label="Given that the air bronchogram is present, is it static or dynamic?"
-                                            options={[true, false]}
-                                            optionsLabels={[
-                                                "Static",
-                                                "Dynamic",
-                                            ]}
-                                            isBoolean={true}
-                                            nesting={4}
-                                        />
-                                        <RadioBox
-                                            register={register}
-                                            unregister={unregister}
-                                            registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.airBronchogram.specifics.isFluid"
-                                            }
-                                            errors={errors}
-                                            label="Given that the air bronchogram is present, is it fluid?"
-                                            options={[true, false]}
-                                            optionsLabels={["Yes", "No"]}
-                                            isBoolean={true}
-                                            nesting={4}
-                                        />
-                                    </AnimateSlide>
-                                )
-                        }
-                    </AnimatePresence>
-
-                    <AnimatePresence key="macroConsolidationsDoppler">
-                        {
-                            // @ts-ignore
-                            (isMacroConsolidationsPresentWatch as string) ===
-                                "true" && (
-                                <AnimateSlide>
-                                    <RadioBox
-                                        register={register}
-                                        unregister={unregister}
-                                        registerName={
-                                            "subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable"
-                                        }
-                                        errors={errors}
-                                        label="Is Doppler data available?"
-                                        options={[true, false]}
-                                        optionsLabels={["Yes", "No"]}
-                                        isBoolean={true}
-                                        nesting={3}
-                                    />
-                                </AnimateSlide>
-                            )
-                        }
-                    </AnimatePresence>
-
-                    <AnimatePresence key="macroConsolidationsDopplerSpecifics">
-                        {
-                            // @ts-ignore
-                            (isMacroConsolidationsPresentWatch as string) ===
-                                "true" &&
-                                // @ts-ignore
-                                (isDopplerAvailableWatch as string) ===
-                                    "true" && (
-                                    <AnimateSlide>
-                                        <RadioBox
-                                            register={register}
-                                            unregister={unregister}
-                                            registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isVascularizationPresent"
-                                            }
-                                            errors={errors}
-                                            label="Given that the Doppler data is available, is the vascularization of the consolidations present?"
-                                            options={[true, false]}
-                                            optionsLabels={["Yes", "No"]}
-                                            isBoolean={true}
-                                            nesting={4}
-                                        />
-                                        <RadioBox
-                                            register={register}
-                                            unregister={unregister}
-                                            registerName={
-                                                "subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isCoherentWithAnatomy"
-                                            }
-                                            errors={errors}
-                                            label="Given that the Doppler data is available, is the level of vascularization coherent with the anatomy?"
-                                            options={[true, false]}
-                                            optionsLabels={["Yes", "No"]}
-                                            isBoolean={true}
-                                            nesting={4}
-                                        />
-                                    </AnimateSlide>
-                                )
-                        }
-                    </AnimatePresence>
-                </AnimatePresence>
-
-                <br />
-                <RadioBox
-                    register={register}
-                    unregister={unregister}
-                    registerName={"pleuralEffusion.isPresent"}
-                    errors={errors}
-                    label="Is the pleural effusion present?"
-                    options={[true, false]}
-                    optionsLabels={["Yes", "No"]}
-                    isBoolean={true}
-                />
-                <AnimatePresence>
-                    {
-                        // @ts-ignore
-                        (isPleuralEffusionPresentWatch as string) ===
-                            "true" && (
-                            <AnimateSlide>
                                 <RadioBox
                                     register={register}
                                     unregister={unregister}
-                                    registerName={
-                                        "pleuralEffusion.specifics.characterization"
-                                    }
+                                    registerName={"data.horizontalArtifacts.isPresent"}
                                     errors={errors}
-                                    label="Given that the pleural effusion is present, how is it characterized?"
-                                    options={["complex", "hypo-anechoic"]}
-                                    optionsLabels={["Complex", "Hypo-anechoic"]}
-                                    isBoolean={false}
-                                    nesting={1}
-                                />
-                                <RadioBox
-                                    register={register}
-                                    unregister={unregister}
-                                    registerName={
-                                        "pleuralEffusion.specifics.isSeptaPresent"
-                                    }
-                                    errors={errors}
-                                    label="Given that the pleural effusion is present, how is it characterized?"
+                                    label="Are horizontal artifacts present?"
                                     options={[true, false]}
-                                    optionsLabels={[
-                                        "With septa",
-                                        "Without septa (= corpuscular)",
-                                    ]}
+                                    optionsLabels={["Yes", "No"]}
                                     isBoolean={true}
-                                    nesting={1}
                                 />
+                                <AnimatePresence key="horizontalArtifactsSpecifics">
+                                    {
+                                        // @ts-ignore
+                                        (isHorizontalArtifactsPresentWatch as string) ===
+                                            "true" && (
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.horizontalArtifacts.specifics.coverageAboveOrEqual50"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that horizontal artifacts are present, is their coverage (laterally) above 50% of the visible pleural line?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
+                                                    isBoolean={true}
+                                                    nesting={1}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+                                </AnimatePresence>
+
+                                <RadioBox
+                                    register={register}
+                                    unregister={unregister}
+                                    registerName={"data.verticalArtifacts.isPresent"}
+                                    errors={errors}
+                                    label="Are vertical artifacts present?"
+                                    options={[true, false]}
+                                    optionsLabels={["Yes", "No"]}
+                                    isBoolean={true}
+                                />
+
+                                <AnimatePresence key="verticalArtifactsSpecifics">
+                                    {
+                                        // @ts-ignore
+                                        (isVerticalArtifactsPresentWatch as string) ===
+                                            "true" && (
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.verticalArtifacts.specifics.coverageAboveOrEqual50"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that vertical artifacts are present, is their coverage (laterally) above 50% of the visible pleural line?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
+                                                    isBoolean={true}
+                                                    nesting={1}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+                                </AnimatePresence>
+
+                                <label className="lblRadio !text-2xl mt-12 !mb-4">
+                                    About the subpleural space:
+                                </label>
+
+                                <RadioBox
+                                    register={register}
+                                    unregister={unregister}
+                                    registerName={
+                                        "data.subpleuralSpace.microConsolidations.isPresent"
+                                    }
+                                    errors={errors}
+                                    label="Are micro-consolidations present? (hypo-echoic nodules smaller in diameter than 5 mm)"
+                                    options={[true, false]}
+                                    optionsLabels={["Yes", "No"]}
+                                    isBoolean={true}
+                                    nesting={2}
+                                />
+
+                                <AnimatePresence key="microConsolidationsSpecifics">
+                                    {
+                                        // @ts-ignore
+                                        (isMicroConsolidationsPresentWatch as string) ===
+                                            "true" && (
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.subpleuralSpace.microConsolidations.specifics.isSingle"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that micro-consolidations are present, is there a single consolidation or multiple consolidations?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Single", "Multiple"]}
+                                                    isBoolean={true}
+                                                    nesting={3}
+                                                />
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.subpleuralSpace.microConsolidations.specifics.coverageAboveOrEqual50"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that micro-consolidations are present, is their coverage (laterally) above 50% of the visible pleural line?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
+                                                    isBoolean={true}
+                                                    nesting={3}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+                                </AnimatePresence>
+
+                                <RadioBox
+                                    register={register}
+                                    unregister={unregister}
+                                    registerName={
+                                        "data.subpleuralSpace.macroConsolidations.isPresent"
+                                    }
+                                    errors={errors}
+                                    label="Are macro-consolidations present? (hypo-echoic nodules larger in diameter than 5 mm)"
+                                    options={[true, false]}
+                                    optionsLabels={["Yes", "No"]}
+                                    isBoolean={true}
+                                    nesting={2}
+                                />
+
+                                <AnimatePresence key="macroConsolidationsSpecifics">
+                                    {
+                                        // @ts-ignore
+                                        (isMacroConsolidationsPresentWatch as string) ===
+                                            "true" && (
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.subpleuralSpace.macroConsolidations.specifics.isSingle"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that macro-consolidations are present, is there a single consolidation or multiple consolidations?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Single", "Multiple"]}
+                                                    isBoolean={true}
+                                                    nesting={3}
+                                                />
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.subpleuralSpace.macroConsolidations.specifics.coverageAboveOrEqual50"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that macro-consolidations are present, is their coverage (laterally) above 50% of the visible pleural line?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Yes, ≥ 50%", "No, < 50%"]}
+                                                    isBoolean={true}
+                                                    nesting={3}
+                                                />
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.subpleuralSpace.macroConsolidations.specifics.airBronchogram.isPresent"
+                                                    }
+                                                    errors={errors}
+                                                    label="Is the air bronchogram present?"
+                                                    options={[true, false]}
+                                                    optionsLabels={["Yes", "No"]}
+                                                    isBoolean={true}
+                                                    nesting={3}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+
+                                    <AnimatePresence key="airBronchogramSpecifics">
+                                        {
+                                            // @ts-ignore
+                                            (isMacroConsolidationsPresentWatch as string) ===
+                                                "true" &&
+                                                // @ts-ignore
+                                                (isAirBronchogramPresentWatch as string) ===
+                                                    "true" && (
+                                                    <AnimateSlide>
+                                                        <RadioBox
+                                                            register={register}
+                                                            unregister={unregister}
+                                                            registerName={
+                                                                "data.subpleuralSpace.macroConsolidations.specifics.airBronchogram.specifics.isStatic"
+                                                            }
+                                                            errors={errors}
+                                                            label="Given that the air bronchogram is present, is it static or dynamic?"
+                                                            options={[true, false]}
+                                                            optionsLabels={[
+                                                                "Static",
+                                                                "Dynamic",
+                                                            ]}
+                                                            isBoolean={true}
+                                                            nesting={4}
+                                                        />
+                                                        <RadioBox
+                                                            register={register}
+                                                            unregister={unregister}
+                                                            registerName={
+                                                                "data.subpleuralSpace.macroConsolidations.specifics.airBronchogram.specifics.isFluid"
+                                                            }
+                                                            errors={errors}
+                                                            label="Given that the air bronchogram is present, is it fluid?"
+                                                            options={[true, false]}
+                                                            optionsLabels={["Yes", "No"]}
+                                                            isBoolean={true}
+                                                            nesting={4}
+                                                        />
+                                                    </AnimateSlide>
+                                                )
+                                        }
+                                    </AnimatePresence>
+
+                                    <AnimatePresence key="macroConsolidationsDoppler">
+                                        {
+                                            // @ts-ignore
+                                            (isMacroConsolidationsPresentWatch as string) ===
+                                                "true" && (
+                                                <AnimateSlide>
+                                                    <RadioBox
+                                                        register={register}
+                                                        unregister={unregister}
+                                                        registerName={
+                                                            "data.subpleuralSpace.macroConsolidations.specifics.dopplerData.isAvailable"
+                                                        }
+                                                        errors={errors}
+                                                        label="Is Doppler data available?"
+                                                        options={[true, false]}
+                                                        optionsLabels={["Yes", "No"]}
+                                                        isBoolean={true}
+                                                        nesting={3}
+                                                    />
+                                                </AnimateSlide>
+                                            )
+                                        }
+                                    </AnimatePresence>
+
+                                    <AnimatePresence key="macroConsolidationsDopplerSpecifics">
+                                        {
+                                            // @ts-ignore
+                                            (isMacroConsolidationsPresentWatch as string) ===
+                                                "true" &&
+                                                // @ts-ignore
+                                                (isDopplerAvailableWatch as string) ===
+                                                    "true" && (
+                                                    <AnimateSlide>
+                                                        <RadioBox
+                                                            register={register}
+                                                            unregister={unregister}
+                                                            registerName={
+                                                                "data.subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isVascularizationPresent"
+                                                            }
+                                                            errors={errors}
+                                                            label="Given that the Doppler data is available, is the vascularization of the consolidations present?"
+                                                            options={[true, false]}
+                                                            optionsLabels={["Yes", "No"]}
+                                                            isBoolean={true}
+                                                            nesting={4}
+                                                        />
+                                                        <RadioBox
+                                                            register={register}
+                                                            unregister={unregister}
+                                                            registerName={
+                                                                "data.subpleuralSpace.macroConsolidations.specifics.dopplerData.specifics.isCoherentWithAnatomy"
+                                                            }
+                                                            errors={errors}
+                                                            label="Given that the Doppler data is available, is the level of vascularization coherent with the anatomy?"
+                                                            options={[true, false]}
+                                                            optionsLabels={["Yes", "No"]}
+                                                            isBoolean={true}
+                                                            nesting={4}
+                                                        />
+                                                    </AnimateSlide>
+                                                )
+                                        }
+                                    </AnimatePresence>
+                                </AnimatePresence>
+
+                                <br />
+                                <RadioBox
+                                    register={register}
+                                    unregister={unregister}
+                                    registerName={"data.pleuralEffusion.isPresent"}
+                                    errors={errors}
+                                    label="Is the pleural effusion present?"
+                                    options={[true, false]}
+                                    optionsLabels={["Yes", "No"]}
+                                    isBoolean={true}
+                                />
+                                <AnimatePresence>
+                                    {
+                                        // @ts-ignore
+                                        (isPleuralEffusionPresentWatch as string) ===
+                                            "true" && (
+                                            <AnimateSlide>
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.pleuralEffusion.specifics.characterization"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that the pleural effusion is present, how is it characterized?"
+                                                    options={["complex", "hypo-anechoic"]}
+                                                    optionsLabels={["Complex", "Hypo-anechoic"]}
+                                                    isBoolean={false}
+                                                    nesting={1}
+                                                />
+                                                <RadioBox
+                                                    register={register}
+                                                    unregister={unregister}
+                                                    registerName={
+                                                        "data.pleuralEffusion.specifics.isSeptaPresent"
+                                                    }
+                                                    errors={errors}
+                                                    label="Given that the pleural effusion is present, how is it characterized?"
+                                                    options={[true, false]}
+                                                    optionsLabels={[
+                                                        "With septa",
+                                                        "Without septa (= corpuscular)",
+                                                    ]}
+                                                    isBoolean={true}
+                                                    nesting={1}
+                                                />
+                                            </AnimateSlide>
+                                        )
+                                    }
+                                </AnimatePresence>
+
                             </AnimateSlide>
                         )
                     }
@@ -695,7 +727,7 @@ export default function Form() {
                         Reset
                     </button>
                     <button
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || disableSubmit}
                         type="submit"
                         className="btn xl:col-start-2 col-start-3 row-start-1"
                     >

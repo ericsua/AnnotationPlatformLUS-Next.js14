@@ -190,9 +190,6 @@ videoRouter.get("/", async (req: Request, res: Response) => {
             // Set status to available if video is still pending since time has expired
             if (updatedVideo.status === "pending") {
                 // Video hasn't been annotated yet, update status:
-                logger.info(
-                    `[timeout] Video status updated from pending to available (id: ${updatedVideo._id})`
-                );
                 updatedVideo.status = "available";
                 const {
                     errorStatus: errorStatusAvailable,
@@ -208,6 +205,9 @@ videoRouter.get("/", async (req: Request, res: Response) => {
                         `[timeout] Error while saving video status to available: ${messageAvailable}`
                     );
                 }
+                logger.info(
+                    `[timeout] Video status updated from pending to available (id: ${updatedVideo._id})`
+                );
             } else if (updatedVideo.status === "annotated") {
                 // Video has been annotated, no need to update:
                 logger.info(
@@ -233,6 +233,7 @@ videoRouter.get("/", async (req: Request, res: Response) => {
         const randomID = crypto.randomUUID();
         const refTimeout = setTimeout(callbackTimeout, TIME_RESERVE_VIDEO * 1000, randomID); //*60);
         timeouts.push({ a: refTimeout, b: callbackTimeout, id: randomID });
+        // console.log("timeouts length", timeouts.length);
 
         logger.info(
             `[get] Random video id: ${randomVideo._id}, status: ${randomVideo.status}`

@@ -12,7 +12,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
     const isLogged = session?.user ? true : false;
     const userEmail = session?.user?.email;
     if (!isLogged || !userEmail) {
-        return Promise.reject("You must be logged in to submit an annotation.");
+        return Promise.reject(new Error("You must be logged in to submit an annotation."));
     }
 
     // console.log("user email", userEmail, "videoID", videoID, "data", data)
@@ -27,15 +27,15 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
     })
     // console.log("user", user)
     if (!user || !user.id) {
-        return Promise.reject("User not found");
+        return Promise.reject(new Error("User not found"));
     }
     // Check if the user has a video assigned to annotate
     if (!user.latestVideoId) {
-        return Promise.reject("User has no video assigned to annotate");
+        return Promise.reject(new Error("User has no video assigned to annotate"));
     }
     // Check if the user's assigned video matches the video they are trying to annotate (server-side vs request validation)
     if (user.latestVideoId !== videoID) {
-        return Promise.reject("User's assigned video mismatch");
+        return Promise.reject(new Error("User's assigned video mismatch"));
     }
     const userID = user.id;
     // console.log("user from db", user.id, "id from db", user.latestVideoId, "id from request", videoID)
@@ -68,7 +68,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
             );
         }
         return Promise.reject(
-            "An error occurred while submitting the form."
+            new Error("An error occurred while submitting the form.")
         );
     }
 
@@ -77,6 +77,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
         // console.log("annotation submitted successfully", jsonData);
 
         // Update the user's latestVideoId to null
+        
         try {
             await prisma.videos.update({
                 where: {
@@ -94,7 +95,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
         } catch (error) {
             console.error("Server error while disconnecting user from video", error);
             return Promise.reject(
-                "An error occurred while submitting the form."
+                new Error("An error occurred while submitting the form.")
             );
             
         }
@@ -105,7 +106,7 @@ export const postVideoAction = async (data: FormData, videoID: string) => {
             jsonData
         );
         return Promise.reject(
-            "An error occurred while submitting the form."
+            new Error("An error occurred while submitting the form.")
         );
     }
 };

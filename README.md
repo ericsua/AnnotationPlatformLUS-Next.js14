@@ -11,8 +11,18 @@ The platform is composed of two main parts: the client and the server.
 - The client, built in Next.js, is responsible for the user interface and the interaction with the user, as well as the management of the state and the data, using `Redux Toolkit`, the authentication, using `Auth.js (v5)` via JWT, the registration/login forms, using `React Hook Form` and `Zod`, and the verification/reset of the account using emails sent via `Gmail`. The UI is built using `TailwindCSS`, `Framer Motion`, `Radix UI` and `Material-UI`.
 - The server, built in `Node.js` and `Express.js`, acts as a REST API and it is responsible for the `Socket.IO` real-time communications, the assignment of videos to the users, the interaction with the database and the management of the data.
 
+## Pre-requisites
+- Node.js 21.17.1 or higher
+- npm 10.7.0 or higher
+- Docker 25.0.3 or higher (if you want to use a local MongoDB server)
+- MongoDB account (if you want to use MongoDB Atlas)
+- Resend account (if you want to use Resend as the email provider)
+- Gmail account (if you want to use NodeMailer with your Gmail account)
+- Nginx 1.25.5 or higher (if you want to use a reverse proxy for deployment)
+- Let's Encrypt (if you want to use SSL)
+
 ## Deployment
-The platform is deployed on a VPS, hosted by the University of Trento, with `Ubuntu 22.04`, using `Nginx` as a reverse proxy. The database is hosted on `MongoDB Atlas`, or alternatively on a `Docker` container with a replica set of three nodes. The `SSL` certificate is provided by `Let's Encrypt`.
+The platform is deployed on a VPS, hosted by the University of Trento, with `Ubuntu 22.04`, using `Nginx` as a reverse proxy. The database is hosted on `MongoDB Atlas`, or alternatively on a `Docker` container with a replica set of three nodes. The `SSL` certificate is provided by `Let's Encrypt`. The platform is managed using `pm2` to run the servers in the background and restart them automatically in case of a crash.
 
 To work properly in a firewalled VPS, the following ports need to be open:
 - 80 (HTTP)
@@ -83,13 +93,15 @@ The `npm ci` command performs a clean install. It is used to install the exact v
 
 ### MongoDB Server
 The platform can use a local MongoDB server, or a MongoDB Atlas cluster.
-You also need to change the constant used as a parameter of the `connect()` function inside the `./server/index.ts` file to connect to the desired database. (e.g. `MONGO_URI` or `MONGO_URI_LOCAL`)
+> N.B. You HAVE TO change the environment variable `USE_REMOTE_DB` in the `./server/.env` file accordingly (`true`,`false`), since it is used as a parameter of the `connect()` function inside the `./server/index.ts` file to connect to the desired database. (e.g. `MONGO_URI` or `MONGO_URI_LOCAL`).
+
+> Also, you HAVE TO change the datasource `url` in the `./client/prisma/schema.prisma` file accordingly (`DATABASE_URL` or `DATABASE_URL_LOCAL`) and then run in the terminal `cd client && npx prisma generate && npx prisma db push`. This command should be run every time the schema or the database connection changes.
 
 #### Local MongoDB Server
 A folder named `mongo3` is needed inside the `./server` directory, containing the following files:
 - `username.txt` containing the username for the MongoDB server admin user
 - `password.txt` containing the password for the MongoDB server admin user
-- `data` folder used to persist the data after the container is stopped
+- `data` folder (empty) used to persist the data after the container is stopped
 
 To start a local MongoDB server with a three replica set in a Docker container, the following command is used inside the `./server` directory:
 ```bash
@@ -101,7 +113,7 @@ In case of an error about the `host.docker.internal` not being resolved, the fol
 ```
 
 #### MongoDB Atlas
-To use MongoDB Atlas, a cluster needs to be created, and the connection string needs to be added to the `.env` file inside the `./client` and `./server` directories.
+To use MongoDB Atlas, a cluster needs to be created in their website, and the connection string needs to be added to the `.env` file inside the `./client` and `./server` directories.
 
 ### Environment Variables
 Inside the `./client` directory, two `dotenv` files are needed.
@@ -113,7 +125,7 @@ DATABASE_URL_LOCAL<your-local-mongodb-url> # e.g. mongodb://<username>:<password
 - The `.env.local` file, used by `Next.js` should contain the following environment variables:
 ```env
 SERVER_URL_BASE=<server-url> # e.g. http://localhost:3000 
-SERVER_PORT=<server-port> # e.g. 3000
+NEXT_PUBLIC_SERVER_PORT=<server-port> # e.g. 3000
 NEXT_PUBLIC_BASE_URL=<your-client-base-url> # e.g. http://localhost:5174 or https://llms4ultra.disi.unitn.it
 
 AUTH_SECRET=<secret-key-for-auth-js> # create a random string (e.g. using openssl rand -hex 32)
@@ -129,6 +141,7 @@ REPLY_TO_EMAIL=<your-email> # if you want to use a different email for the "repl
 
 Inside the `./server` directory, a `.env` file is needed, containing the following environment variables:
 ```env
+USE_REMOTE_DB=true # true if you want to use MongoDB Atlas, false if you want to use a local MongoDB server
 PORT=<server-port> # e.g. 3000
 MONGO_URI=<your-remote-mongodb-atlas-url> # e.g. mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
 MONGO_URI_LOCAL=<your-local-mongodb-url> # e.g. mongodb://<username>:<password>@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/<database>?retryWrites=true&w=majority
@@ -140,6 +153,7 @@ To generate the Prisma client, the following command is used inside the `./clien
 npx prisma generate
 npx prisma db push
 ```
+> These commands have to be run every time the schema or the database connection changes.
 
 ### Video Files
 The video files are stored in the `./client/public/videos` directory, and they are served statically by the Next.js server.
@@ -170,11 +184,19 @@ cd client
 npm run build
 npm run start
 ```
+... or if you want to start it in production mode using `pm2` such that it runs in background and restarts automatically in case of a crash, in place of `npm run start`:
+```bash
+pm2 start npm --name "client" -- start
+```
 In a different terminal:
 ```bash
 cd server
 npm run build
 npm run start
+```
+...or if you want to start the it in production mode using `pm2` so that it runs in background and restarts automatically in case of a crash, in place of `npm run start`:
+```bash
+pm2 start npm --name "server" -- start
 ```
 
 ### Development
@@ -189,6 +211,8 @@ In a different terminal:
 cd server
 npm run dev
 ```
+
+> Always remember to change the settings as explained in the `MongoDB Server` section if you want to change the database connection (remote or local).
 
 ## License
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.

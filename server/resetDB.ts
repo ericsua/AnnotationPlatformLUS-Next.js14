@@ -4,6 +4,8 @@ import Video from "./models/video";
 import Annotation from "./models/annotation";
 import readline from "readline";
 
+import { asyncExitHook } from "exit-hook";
+
 // Script to reset the database
 
 dotenv.config();
@@ -21,16 +23,6 @@ function askQuestion(query: string) {
             resolve(ans);
         })
     );
-}
-
-// ask if user wants to reset the database
-const ans = await askQuestion(
-    "\nAre you sure you want to reset the database? (yes/no) "
-);
-
-if (ans !== "yes" && ans !== "y") {
-    console.log("Exiting...");
-    process.exit(0);
 }
 
 // ask if user wants to use remote database
@@ -71,11 +63,27 @@ if (ansVideos === "yes" || ansVideos === "y") {
     DELETE_VIDEOS = true;
 }
 
+// ask if user wants to reset the database
+const ans = await askQuestion(
+    "\nAre you sure you want to reset the " + (USE_REMOTE ? "REMOTE" : "LOCAL") + " database? (yes/no) "
+);
+
+if (ans !== "yes" && ans !== "y") {
+    console.log("Exiting...");
+    process.exit(0);
+}
+
 const MONGO_URI = process.env.MONGO_URI || "error";
 const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 
 try {
-    await mongoose.connect(USE_REMOTE ? MONGO_URI : MONGO_URI_LOCAL);
+    if (USE_REMOTE) {
+        console.log("Connecting to REMOTE MongoDB");
+        await mongoose.connect(MONGO_URI);
+    } else {
+        console.log("Connecting to LOCAL MongoDB");
+        await mongoose.connect(MONGO_URI_LOCAL);
+    }
 } catch (error) {
     console.log("cannot connect to the database");
 }
@@ -108,10 +116,14 @@ console.log("Database reset successfully");
 
 db.close();
 
-["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
-    process.on(signal, () => {
-        console.log(`Process ${process.pid} has been interrupted`);
+asyncExitHook(async (signal) => {
+    // signals start from 128 (Node): 129 = SIGHUP, 130 = SIGINT, 133 = SIGQUIT, 143 = SIGTERM
+    if (signal === 129 || signal === 130 || signal === 131 || signal === 143) {
+        console.log(
+            `\nReceived ${signal} signal, gracefully cleaning up before terminating... 📕`
+        );
+
         db.close();
-        process.exit(0);
-    })
-);
+        console.log("Mongoose connection closed through app termination 📕");
+    }
+}, {wait: 5000});

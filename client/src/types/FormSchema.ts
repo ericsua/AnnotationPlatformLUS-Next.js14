@@ -40,135 +40,73 @@ const requiredErrorMessage = { invalid_type_error: "Please select an option" };
 // The front- and back-end schemas are not exactly the same, but they are similar, since the front-end has to
 // convert values collected from the page to the correct types before sending them to the back-end
 export const FormSchema = z.object({
-    pleuralLine: z
-        .object({
-            // first applies the zod pipe to convert the string in the input field to a number, then normal zod validation
-            depthInCentimeters: zodInputNumberConverter(
-                z
-                    .number({
-                        // custom error message if the number is not valid, in all cases (min/max/step), the message is the same
-                        errorMap: () => ({
-                            message:
-                                "The number must be between 0 and 1 and have at most one decimal",
-                        }),
-                    })
-                    // check that the number is between 0 and 1, and has at most one decimal
-                    .min(0)
-                    .max(1)
-                    .step(0.1)
-                )
-                .nullable() // since it is not used for now
-                .default(null),
-            isRegular: z
-                // pass the custom error message to the zod field (for invalid_type_error)
-                .string(requiredErrorMessage)
-                // convert the string to a boolean
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            // in general, "specifics" are fields required when a certain other field is set to a specific value (e.g. isRegular === false)
-            specificsIrregular: z
-                .object({
-                    isContinuous: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable() // in general, specifics are nullable, since they are only required in certain cases
-                .default(null),
-        })
-        .refine(
-            // check that the specifics are filled if the pleural line is set to irregular
-            (data) => {
-                return data.isRegular === false
-                    ? data.specificsIrregular?.isContinuous !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural line is irregular, the specifics must be filled",
-                // path to the field that is invalid, relative to the root of the object,
-                // to show the user where the error is
-                path: ["specificsIrregular.isContinuous"],
-            }
-        ),
-    axisScan: z.enum(["longitudinal", "horizontal"], requiredErrorMessage),
-    isPleuralSlidingPresent: z
-        .string(requiredErrorMessage)
+    // First check if the quality is sufficient, otherwise the data are not required (skip button)
+    isQualitySufficient: z.string(requiredErrorMessage)
         .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-    horizontalArtifacts: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            specifics: z
-                .object({
-                    coverageAboveOrEqual50: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        // check that the specifics are filled if the horizontal artifacts are present
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.coverageAboveOrEqual50 !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the horizontal artifacts are present, the specifics must be filled",
-                path: ["specifics.coverageAboveOrEqual50"],
-            }
-        ),
-    verticalArtifacts: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val, ctx) => convertStringToBoolean(val, ctx)),
-            specifics: z
-                .object({
-                    coverageAboveOrEqual50: z
-                        .string(requiredErrorMessage)
-                        .transform((val, ctx) =>
-                            convertStringToBoolean(val, ctx)
-                        )
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.coverageAboveOrEqual50 !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the vertical artifacts are present, the specifics must be filled",
-                path: ["specifics.coverageAboveOrEqual50"],
-            }
-        ),
-    subpleuralSpace: z.object({
-        microConsolidations: z
+    data: z.object({
+        pleuralLine: z
+            .object({
+                // first applies the zod pipe to convert the string in the input field to a number, then normal zod validation
+                depthInCentimeters: zodInputNumberConverter(
+                    z
+                        .number({
+                            // custom error message if the number is not valid, in all cases (min/max/step), the message is the same
+                            errorMap: () => ({
+                                message:
+                                    "The number must be between 0 and 1 and have at most one decimal",
+                            }),
+                        })
+                        // check that the number is between 0 and 1, and has at most one decimal
+                        .min(0)
+                        .max(1)
+                        .step(0.1)
+                    )
+                    .nullable() // since it is not used for now
+                    .default(null),
+                isRegular: z
+                    // pass the custom error message to the zod field (for invalid_type_error)
+                    .string(requiredErrorMessage)
+                    // convert the string to a boolean
+                    .transform((val, ctx) => convertStringToBoolean(val, ctx)),
+                // in general, "specifics" are fields required when a certain other field is set to a specific value (e.g. isRegular === false)
+                specificsIrregular: z
+                    .object({
+                        isContinuous: z
+                            .string(requiredErrorMessage)
+                            .transform((val, ctx) =>
+                                convertStringToBoolean(val, ctx)
+                            )
+                            .nullable(),
+                    })
+                    .nullable() // in general, specifics are nullable, since they are only required in certain cases
+                    .default(null),
+            })
+            .refine(
+                // check that the specifics are filled if the pleural line is set to irregular
+                (data) => {
+                    return data.isRegular === false
+                        ? data.specificsIrregular?.isContinuous !== null
+                        : true;
+                },
+                {
+                    message:
+                        "If the pleural line is irregular, the specifics must be filled",
+                    // path to the field that is invalid, relative to the root of the object,
+                    // to show the user where the error is
+                    path: ["specificsIrregular.isContinuous"],
+                }
+            ),
+        axisScan: z.enum(["longitudinal", "horizontal"], requiredErrorMessage),
+        isPleuralSlidingPresent: z
+            .string(requiredErrorMessage)
+            .transform((val, ctx) => convertStringToBoolean(val, ctx)),
+        horizontalArtifacts: z
             .object({
                 isPresent: z
                     .string(requiredErrorMessage)
                     .transform((val, ctx) => convertStringToBoolean(val, ctx)),
                 specifics: z
                     .object({
-                        isSingle: z
-                            .string(requiredErrorMessage)
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
                         coverageAboveOrEqual50: z
                             .string(requiredErrorMessage)
                             .transform((val, ctx) =>
@@ -179,8 +117,7 @@ export const FormSchema = z.object({
                     .nullable()
                     .default(null),
             })
-            // one refine for each field that is required if the micro-consolidations are present
-            // refine are done in the parent object, since they are always present, but the specifics are not
+            // check that the specifics are filled if the horizontal artifacts are present
             .refine(
                 (data) => {
                     return data.isPresent === true
@@ -189,44 +126,138 @@ export const FormSchema = z.object({
                 },
                 {
                     message:
-                        "If the micro-consolidations are present, the specifics must be filled",
+                        "If the horizontal artifacts are present, the specifics must be filled",
                     path: ["specifics.coverageAboveOrEqual50"],
                 }
-            )
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.isSingle !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the micro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.isSingle"],
-                }
             ),
-        macroConsolidations: z
+        verticalArtifacts: z
             .object({
                 isPresent: z
                     .string(requiredErrorMessage)
                     .transform((val, ctx) => convertStringToBoolean(val, ctx)),
                 specifics: z
                     .object({
-                        isSingle: z
+                        coverageAboveOrEqual50: z
                             .string(requiredErrorMessage)
                             .transform((val, ctx) =>
                                 convertStringToBoolean(val, ctx)
                             )
                             .nullable(),
-                        coverageAboveOrEqual50: z
-                            .string()
-                            .transform((val, ctx) =>
-                                convertStringToBoolean(val, ctx)
-                            )
-                            .nullable(),
-                        airBronchogram: z
-                            .object({
-                                isPresent: z
+                    })
+                    .nullable()
+                    .default(null),
+            })
+            .refine(
+                (data) => {
+                    return data.isPresent === true
+                        ? data.specifics?.coverageAboveOrEqual50 !== null
+                        : true;
+                },
+                {
+                    message:
+                        "If the vertical artifacts are present, the specifics must be filled",
+                    path: ["specifics.coverageAboveOrEqual50"],
+                }
+            ),
+        subpleuralSpace: z.object({
+            microConsolidations: z
+                .object({
+                    isPresent: z
+                        .string(requiredErrorMessage)
+                        .transform((val, ctx) => convertStringToBoolean(val, ctx)),
+                    specifics: z
+                        .object({
+                            isSingle: z
+                                .string(requiredErrorMessage)
+                                .transform((val, ctx) =>
+                                    convertStringToBoolean(val, ctx)
+                                )
+                                .nullable(),
+                            coverageAboveOrEqual50: z
+                                .string(requiredErrorMessage)
+                                .transform((val, ctx) =>
+                                    convertStringToBoolean(val, ctx)
+                                )
+                                .nullable(),
+                        })
+                        .nullable()
+                        .default(null),
+                })
+                // one refine for each field that is required if the micro-consolidations are present
+                // refine are done in the parent object, since they are always present, but the specifics are not
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.coverageAboveOrEqual50 !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the micro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.coverageAboveOrEqual50"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.isSingle !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the micro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.isSingle"],
+                    }
+                ),
+            macroConsolidations: z
+                .object({
+                    isPresent: z
+                        .string(requiredErrorMessage)
+                        .transform((val, ctx) => convertStringToBoolean(val, ctx)),
+                    specifics: z
+                        .object({
+                            isSingle: z
+                                .string(requiredErrorMessage)
+                                .transform((val, ctx) =>
+                                    convertStringToBoolean(val, ctx)
+                                )
+                                .nullable(),
+                            coverageAboveOrEqual50: z
+                                .string()
+                                .transform((val, ctx) =>
+                                    convertStringToBoolean(val, ctx)
+                                )
+                                .nullable(),
+                            airBronchogram: z
+                                .object({
+                                    isPresent: z
+                                        .string(requiredErrorMessage)
+                                        .transform((val, ctx) =>
+                                            convertStringToBoolean(val, ctx)
+                                        )
+                                        .nullable(),
+                                    specifics: z
+                                        .object({
+                                            isStatic: z
+                                                .string(requiredErrorMessage)
+                                                .transform((val, ctx) =>
+                                                    convertStringToBoolean(val, ctx)
+                                                )
+                                                .nullable(),
+                                            isFluid: z
+                                                .string(requiredErrorMessage)
+                                                .transform((val, ctx) =>
+                                                    convertStringToBoolean(val, ctx)
+                                                )
+                                                .nullable(),
+                                        })
+                                        .nullable()
+                                        .default(null),
+                                })
+                                .nullable()
+                                .default(null),
+                            dopplerData: z.object({
+                                isAvailable: z
                                     .string(requiredErrorMessage)
                                     .transform((val, ctx) =>
                                         convertStringToBoolean(val, ctx)
@@ -234,13 +265,13 @@ export const FormSchema = z.object({
                                     .nullable(),
                                 specifics: z
                                     .object({
-                                        isStatic: z
+                                        isVascularizationPresent: z
                                             .string(requiredErrorMessage)
                                             .transform((val, ctx) =>
                                                 convertStringToBoolean(val, ctx)
                                             )
                                             .nullable(),
-                                        isFluid: z
+                                        isCoherentWithAnatomy: z
                                             .string(requiredErrorMessage)
                                             .transform((val, ctx) =>
                                                 convertStringToBoolean(val, ctx)
@@ -249,34 +280,130 @@ export const FormSchema = z.object({
                                     })
                                     .nullable()
                                     .default(null),
-                            })
-                            .nullable()
-                            .default(null),
-                        dopplerData: z.object({
-                            isAvailable: z
-                                .string(requiredErrorMessage)
-                                .transform((val, ctx) =>
-                                    convertStringToBoolean(val, ctx)
-                                )
-                                .nullable(),
-                            specifics: z
-                                .object({
-                                    isVascularizationPresent: z
-                                        .string(requiredErrorMessage)
-                                        .transform((val, ctx) =>
-                                            convertStringToBoolean(val, ctx)
-                                        )
-                                        .nullable(),
-                                    isCoherentWithAnatomy: z
-                                        .string(requiredErrorMessage)
-                                        .transform((val, ctx) =>
-                                            convertStringToBoolean(val, ctx)
-                                        )
-                                        .nullable(),
-                                })
-                                .nullable()
-                                .default(null),
-                        }),
+                            }),
+                        })
+                        .nullable()
+                        .default(null),
+                })
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.isSingle !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the macro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.isSingle"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.coverageAboveOrEqual50 !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the macro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.coverageAboveOrEqual50"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.airBronchogram?.isPresent !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the macro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.airBronchogram.isPresent"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.isPresent === true
+                            ? data.specifics?.dopplerData.isAvailable !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the macro-consolidations are present, the specifics must be filled",
+                        path: ["specifics.dopplerData.isAvailable"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.specifics?.airBronchogram?.isPresent === true
+                            ? data.specifics.airBronchogram.specifics?.isStatic !==
+                                null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the air bronchogram is present, the specifics must be filled",
+                        path: ["specifics.airBronchogram.specifics.isStatic"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.specifics?.airBronchogram?.isPresent === true
+                            ? data.specifics.airBronchogram.specifics?.isFluid !==
+                                null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the air bronchogram is present, the specifics must be filled",
+                        path: ["specifics.airBronchogram.specifics.isFluid"],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.specifics?.dopplerData?.isAvailable === true
+                            ? data.specifics.dopplerData.specifics
+                                ?.isVascularizationPresent !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the Doppler data is available, the specifics must be filled",
+                        path: [
+                            "specifics.dopplerData.specifics.isVascularizationPresent",
+                        ],
+                    }
+                )
+                .refine(
+                    (data) => {
+                        return data.specifics?.dopplerData?.isAvailable === true
+                            ? data.specifics.dopplerData.specifics
+                                ?.isCoherentWithAnatomy !== null
+                            : true;
+                    },
+                    {
+                        message:
+                            "If the Doppler data is available, the specifics must be filled",
+                        path: [
+                            "specifics.dopplerData.specifics.isCoherentWithAnatomy",
+                        ],
+                    }
+                ),
+        }),
+        pleuralEffusion: z
+            .object({
+                isPresent: z
+                    .string(requiredErrorMessage)
+                    .transform((val) => val === "true"),
+                specifics: z
+                    .object({
+                        characterization: 
+                            z.enum(["complex", "hypo-anechoic"], requiredErrorMessage)
+                            .nullable(),
+                        isSeptaPresent: z
+                            .string(requiredErrorMessage)
+                            .transform((val) => val === "true")
+                            .nullable(),
                     })
                     .nullable()
                     .default(null),
@@ -284,155 +411,53 @@ export const FormSchema = z.object({
             .refine(
                 (data) => {
                     return data.isPresent === true
-                        ? data.specifics?.isSingle !== null
+                        ? data.specifics?.characterization !== null
                         : true;
                 },
                 {
                     message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.isSingle"],
+                        "If the pleural effusion is present, the specifics must be filled",
+                    path: ["specifics.characterization"],
                 }
             )
             .refine(
                 (data) => {
                     return data.isPresent === true
-                        ? data.specifics?.coverageAboveOrEqual50 !== null
+                        ? data.specifics?.isSeptaPresent !== null
                         : true;
                 },
                 {
                     message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.coverageAboveOrEqual50"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.airBronchogram?.isPresent !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.airBronchogram.isPresent"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.isPresent === true
-                        ? data.specifics?.dopplerData.isAvailable !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the macro-consolidations are present, the specifics must be filled",
-                    path: ["specifics.dopplerData.isAvailable"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.airBronchogram?.isPresent === true
-                        ? data.specifics.airBronchogram.specifics?.isStatic !==
-                              null
-                        : true;
-                },
-                {
-                    message:
-                        "If the air bronchogram is present, the specifics must be filled",
-                    path: ["specifics.airBronchogram.specifics.isStatic"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.airBronchogram?.isPresent === true
-                        ? data.specifics.airBronchogram.specifics?.isFluid !==
-                              null
-                        : true;
-                },
-                {
-                    message:
-                        "If the air bronchogram is present, the specifics must be filled",
-                    path: ["specifics.airBronchogram.specifics.isFluid"],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.dopplerData?.isAvailable === true
-                        ? data.specifics.dopplerData.specifics
-                              ?.isVascularizationPresent !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the Doppler data is available, the specifics must be filled",
-                    path: [
-                        "specifics.dopplerData.specifics.isVascularizationPresent",
-                    ],
-                }
-            )
-            .refine(
-                (data) => {
-                    return data.specifics?.dopplerData?.isAvailable === true
-                        ? data.specifics.dopplerData.specifics
-                              ?.isCoherentWithAnatomy !== null
-                        : true;
-                },
-                {
-                    message:
-                        "If the Doppler data is available, the specifics must be filled",
-                    path: [
-                        "specifics.dopplerData.specifics.isCoherentWithAnatomy",
-                    ],
+                        "If the pleural effusion is present, the specifics must be filled",
+                    path: ["specifics.isSeptaPresent"],
                 }
             ),
-    }),
-    pleuralEffusion: z
-        .object({
-            isPresent: z
-                .string(requiredErrorMessage)
-                .transform((val) => val === "true"),
-            specifics: z
-                .object({
-                    characterization: 
-                        z.enum(["complex", "hypo-anechoic"], requiredErrorMessage)
-                        .nullable(),
-                    isSeptaPresent: z
-                        .string(requiredErrorMessage)
-                        .transform((val) => val === "true")
-                        .nullable(),
-                })
-                .nullable()
-                .default(null),
-        })
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.characterization !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural effusion is present, the specifics must be filled",
-                path: ["specifics.characterization"],
-            }
-        )
-        .refine(
-            (data) => {
-                return data.isPresent === true
-                    ? data.specifics?.isSeptaPresent !== null
-                    : true;
-            },
-            {
-                message:
-                    "If the pleural effusion is present, the specifics must be filled",
-                path: ["specifics.isSeptaPresent"],
-            }
-        ),
+    })
+    .nullable()
+    .default(null),
     textDescription: z.string(requiredErrorMessage).min(50, {
         message: "The description must be at least 50 characters long",
     }),
     confidence: z.enum(["low", "medium", "high"], requiredErrorMessage),
-});
+
+})
+// check that the data is filled if the quality is sufficient (isQualitySufficient === true)
+.refine((data) => {
+    return data.isQualitySufficient === true ? data.data !== null : true;
+    }, {
+        message: "The data must be filled if the quality is sufficient",
+        path: ["isQualitySufficient"]
+    }
+)
+// Additional check to ensure that at least one field is filled in the form
+// .refine((data) => {
+//     return data.data !== null ? data.data.pleuralLine.isRegular !== null : true;
+//     },
+//     {
+//         message: "The pleural line must be filled",
+//         path: ["data.pleuralLine.isRegular"]
+//     }
+// )
 
 // infer the type of the Zod schema (final types after transformations are used) to use in the form (for react-hook-form)
 export type FormData = z.infer<typeof FormSchema>;

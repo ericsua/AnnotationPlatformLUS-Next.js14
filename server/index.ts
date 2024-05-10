@@ -10,10 +10,12 @@ import logger from "./logger";
 
 import cors from "cors";
 
+import { asyncExitHook } from 'exit-hook';
+
 dotenv.config();
 
 // MONGOOSE
-
+const USE_REMOTE_DB = process.env.USE_REMOTE_DB || "false";
 const MONGO_URI = process.env.MONGO_URI || "error";
 const MONGO_URI_LOCAL = process.env.MONGO_URI_LOCAL || "error";
 const db = mongoose.connection;
@@ -37,7 +39,14 @@ db.on("reconnected", function () {
 // Connect to MongoDB
 try {
     // decide to which database to connect (local or remote mongoDB)
-    await connect(MONGO_URI);
+    if (USE_REMOTE_DB === "true") {
+        logger.info("Connecting to REMOTE MongoDB 🟢");
+        await connect(MONGO_URI);
+    } else {
+        logger.info("Connecting to LOCAL MongoDB 🟢");
+        await connect(MONGO_URI_LOCAL);
+    }
+    //await connect(MONGO_URI);
     //await connect(MONGO_URI_LOCAL);
 } catch (err) {
     logger.error("Error connecting to MongoDB: ", err);
@@ -103,8 +112,9 @@ httpServer.listen(port, () => {
 
 
 // Close the connection when the application stops (keyboard interrupt events)
-["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
-    process.on(signal, async () => {
+asyncExitHook(async (signal) => {
+    // signals start from 128 (Node): 129 = SIGHUP, 130 = SIGINT, 133 = SIGQUIT, 143 = SIGTERM
+    if (signal === 129 || signal === 130 || signal === 131 || signal === 143) {
         console.log(
             `\nReceived ${signal} signal, gracefully cleaning up before terminating... 📕`
         );
@@ -114,15 +124,9 @@ httpServer.listen(port, () => {
             await timeout.b();
         }
 
-        await mongoose.connection.close(true);
+        mongoose.connection.close(true);
         logger.info("Mongoose connection closed through app termination 📕");
 
         logger.info("Timeouts cleared 📕");
-
-        process.exit(0);
-    })
-);
-
-// setInterval(() => {
-//     timeouts.forEach((timeout) => console.log(timeout.id));
-// }, 5000);
+    }
+}, {wait: 5000});
